@@ -100,7 +100,7 @@
    self)
   )
 
-(setf (get feature_recon::Persons :md5sum-) "599d56444c93fa962e2fbdbd99eb4501")
+(setf (get feature_recon::Persons :md5sum-) "42b07b171c8bbbc4471c42a63942d54b")
 (setf (get feature_recon::Persons :datatype-) "feature_recon/Persons")
 (setf (get feature_recon::Persons :definition-)
       "Person[] persons
@@ -115,7 +115,9 @@ MSG: feature_recon/BodyPartElm
 uint32 part_id
 float32 x
 float32 y
+float32 z
 float32 confidence
+
 ================================================================================
 MSG: std_msgs/Header
 # Standard metadata for higher-level stamped data types.
@@ -138,6 +140,6 @@ string frame_id
 
 
 
-(provide :feature_recon/Persons "599d56444c93fa962e2fbdbd99eb4501")
+(provide :feature_recon/Persons "42b07b171c8bbbc4471c42a63942d54b")
 
 

@@ -8,7 +8,7 @@ import struct
 import feature_recon.msg
 
 class Person(genpy.Message):
-  _md5sum = "77159240dfbac2f3737aaebf05ff898d"
+  _md5sum = "71df5a728503c3e077184dbd734a3f82"
   _type = "feature_recon/Person"
   _has_header = False #flag to mark the presence of a Header object
   _full_text = """BodyPartElm[] body_part
@@ -17,7 +17,9 @@ MSG: feature_recon/BodyPartElm
 uint32 part_id
 float32 x
 float32 y
-float32 confidence"""
+float32 z
+float32 confidence
+"""
   __slots__ = ['body_part']
   _slot_types = ['feature_recon/BodyPartElm[]']
 
@@ -59,7 +61,7 @@ float32 confidence"""
       buff.write(_struct_I.pack(length))
       for val1 in self.body_part:
         _x = val1
-        buff.write(_get_struct_I3f().pack(_x.part_id, _x.x, _x.y, _x.confidence))
+        buff.write(_get_struct_I4f().pack(_x.part_id, _x.x, _x.y, _x.z, _x.confidence))
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
@@ -80,8 +82,8 @@ float32 confidence"""
         val1 = feature_recon.msg.BodyPartElm()
         _x = val1
         start = end
-        end += 16
-        (_x.part_id, _x.x, _x.y, _x.confidence,) = _get_struct_I3f().unpack(str[start:end])
+        end += 20
+        (_x.part_id, _x.x, _x.y, _x.z, _x.confidence,) = _get_struct_I4f().unpack(str[start:end])
         self.body_part.append(val1)
       return self
     except struct.error as e:
@@ -99,7 +101,7 @@ float32 confidence"""
       buff.write(_struct_I.pack(length))
       for val1 in self.body_part:
         _x = val1
-        buff.write(_get_struct_I3f().pack(_x.part_id, _x.x, _x.y, _x.confidence))
+        buff.write(_get_struct_I4f().pack(_x.part_id, _x.x, _x.y, _x.z, _x.confidence))
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
@@ -121,8 +123,8 @@ float32 confidence"""
         val1 = feature_recon.msg.BodyPartElm()
         _x = val1
         start = end
-        end += 16
-        (_x.part_id, _x.x, _x.y, _x.confidence,) = _get_struct_I3f().unpack(str[start:end])
+        end += 20
+        (_x.part_id, _x.x, _x.y, _x.z, _x.confidence,) = _get_struct_I4f().unpack(str[start:end])
         self.body_part.append(val1)
       return self
     except struct.error as e:
@@ -132,9 +134,9 @@ _struct_I = genpy.struct_I
 def _get_struct_I():
     global _struct_I
     return _struct_I
-_struct_I3f = None
-def _get_struct_I3f():
-    global _struct_I3f
-    if _struct_I3f is None:
-        _struct_I3f = struct.Struct("<I3f")
-    return _struct_I3f
+_struct_I4f = None
+def _get_struct_I4f():
+    global _struct_I4f
+    if _struct_I4f is None:
+        _struct_I4f = struct.Struct("<I4f")
+    return _struct_I4f

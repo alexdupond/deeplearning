@@ -9,7 +9,7 @@ import feature_recon.msg
 import std_msgs.msg
 
 class Persons(genpy.Message):
-  _md5sum = "599d56444c93fa962e2fbdbd99eb4501"
+  _md5sum = "42b07b171c8bbbc4471c42a63942d54b"
   _type = "feature_recon/Persons"
   _has_header = False #flag to mark the presence of a Header object
   _full_text = """Person[] persons
@@ -24,7 +24,9 @@ MSG: feature_recon/BodyPartElm
 uint32 part_id
 float32 x
 float32 y
+float32 z
 float32 confidence
+
 ================================================================================
 MSG: std_msgs/Header
 # Standard metadata for higher-level stamped data types.
@@ -96,7 +98,7 @@ string frame_id
         buff.write(_struct_I.pack(length))
         for val2 in val1.body_part:
           _x = val2
-          buff.write(_get_struct_I3f().pack(_x.part_id, _x.x, _x.y, _x.confidence))
+          buff.write(_get_struct_I4f().pack(_x.part_id, _x.x, _x.y, _x.z, _x.confidence))
       _x = self
       buff.write(_get_struct_5I().pack(_x.image_w, _x.image_h, _x.header.seq, _x.header.stamp.secs, _x.header.stamp.nsecs))
       _x = self.header.frame_id
@@ -133,8 +135,8 @@ string frame_id
           val2 = feature_recon.msg.BodyPartElm()
           _x = val2
           start = end
-          end += 16
-          (_x.part_id, _x.x, _x.y, _x.confidence,) = _get_struct_I3f().unpack(str[start:end])
+          end += 20
+          (_x.part_id, _x.x, _x.y, _x.z, _x.confidence,) = _get_struct_I4f().unpack(str[start:end])
           val1.body_part.append(val2)
         self.persons.append(val1)
       _x = self
@@ -169,7 +171,7 @@ string frame_id
         buff.write(_struct_I.pack(length))
         for val2 in val1.body_part:
           _x = val2
-          buff.write(_get_struct_I3f().pack(_x.part_id, _x.x, _x.y, _x.confidence))
+          buff.write(_get_struct_I4f().pack(_x.part_id, _x.x, _x.y, _x.z, _x.confidence))
       _x = self
       buff.write(_get_struct_5I().pack(_x.image_w, _x.image_h, _x.header.seq, _x.header.stamp.secs, _x.header.stamp.nsecs))
       _x = self.header.frame_id
@@ -207,8 +209,8 @@ string frame_id
           val2 = feature_recon.msg.BodyPartElm()
           _x = val2
           start = end
-          end += 16
-          (_x.part_id, _x.x, _x.y, _x.confidence,) = _get_struct_I3f().unpack(str[start:end])
+          end += 20
+          (_x.part_id, _x.x, _x.y, _x.z, _x.confidence,) = _get_struct_I4f().unpack(str[start:end])
           val1.body_part.append(val2)
         self.persons.append(val1)
       _x = self
@@ -232,15 +234,15 @@ _struct_I = genpy.struct_I
 def _get_struct_I():
     global _struct_I
     return _struct_I
+_struct_I4f = None
+def _get_struct_I4f():
+    global _struct_I4f
+    if _struct_I4f is None:
+        _struct_I4f = struct.Struct("<I4f")
+    return _struct_I4f
 _struct_5I = None
 def _get_struct_5I():
     global _struct_5I
     if _struct_5I is None:
         _struct_5I = struct.Struct("<5I")
     return _struct_5I
-_struct_I3f = None
-def _get_struct_I3f():
-    global _struct_I3f
-    if _struct_I3f is None:
-        _struct_I3f = struct.Struct("<I3f")
-    return _struct_I3f

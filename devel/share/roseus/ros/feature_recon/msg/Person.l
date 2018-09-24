@@ -61,7 +61,7 @@
    self)
   )
 
-(setf (get feature_recon::Person :md5sum-) "77159240dfbac2f3737aaebf05ff898d")
+(setf (get feature_recon::Person :md5sum-) "71df5a728503c3e077184dbd734a3f82")
 (setf (get feature_recon::Person :datatype-) "feature_recon/Person")
 (setf (get feature_recon::Person :definition-)
       "BodyPartElm[] body_part
@@ -70,11 +70,13 @@ MSG: feature_recon/BodyPartElm
 uint32 part_id
 float32 x
 float32 y
+float32 z
 float32 confidence
+
 ")
 
 
 
-(provide :feature_recon/Person "77159240dfbac2f3737aaebf05ff898d")
+(provide :feature_recon/Person "71df5a728503c3e077184dbd734a3f82")
 
 

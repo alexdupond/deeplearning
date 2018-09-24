@@ -131,12 +131,12 @@ struct MD5Sum< ::feature_recon::Persons_<ContainerAllocator> >
 {
   static const char* value()
   {
-    return "599d56444c93fa962e2fbdbd99eb4501";
+    return "42b07b171c8bbbc4471c42a63942d54b";
   }
 
   static const char* value(const ::feature_recon::Persons_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0x599d56444c93fa96ULL;
-  static const uint64_t static_value2 = 0x2e2fbdbd99eb4501ULL;
+  static const uint64_t static_value1 = 0x42b07b171c8bbbc4ULL;
+  static const uint64_t static_value2 = 0x471c42a63942d54bULL;
 };
 
 template<class ContainerAllocator>
@@ -167,7 +167,9 @@ MSG: feature_recon/BodyPartElm\n\
 uint32 part_id\n\
 float32 x\n\
 float32 y\n\
+float32 z\n\
 float32 confidence\n\
+\n\
 ================================================================================\n\
 MSG: std_msgs/Header\n\
 # Standard metadata for higher-level stamped data types.\n\

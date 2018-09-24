@@ -5,6 +5,8 @@
           X
           Y-VAL
           Y
+          Z-VAL
+          Z
           CONFIDENCE-VAL
           CONFIDENCE
 ))

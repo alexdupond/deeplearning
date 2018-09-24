@@ -106,7 +106,7 @@ class Persons {
 
   static md5sum() {
     //Returns md5sum for a message object
-    return '599d56444c93fa962e2fbdbd99eb4501';
+    return '42b07b171c8bbbc4471c42a63942d54b';
   }
 
   static messageDefinition() {
@@ -124,7 +124,9 @@ class Persons {
     uint32 part_id
     float32 x
     float32 y
+    float32 z
     float32 confidence
+    
     ================================================================================
     MSG: std_msgs/Header
     # Standard metadata for higher-level stamped data types.

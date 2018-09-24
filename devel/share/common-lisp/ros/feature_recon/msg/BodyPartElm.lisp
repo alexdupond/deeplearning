@@ -22,6 +22,11 @@
     :initarg :y
     :type cl:float
     :initform 0.0)
+   (z
+    :reader z
+    :initarg :z
+    :type cl:float
+    :initform 0.0)
    (confidence
     :reader confidence
     :initarg :confidence
@@ -52,6 +57,11 @@
   (roslisp-msg-protocol:msg-deprecation-warning "Using old-style slot reader feature_recon-msg:y-val is deprecated.  Use feature_recon-msg:y instead.")
   (y m))
 
+(cl:ensure-generic-function 'z-val :lambda-list '(m))
+(cl:defmethod z-val ((m <BodyPartElm>))
+  (roslisp-msg-protocol:msg-deprecation-warning "Using old-style slot reader feature_recon-msg:z-val is deprecated.  Use feature_recon-msg:z instead.")
+  (z m))
+
 (cl:ensure-generic-function 'confidence-val :lambda-list '(m))
 (cl:defmethod confidence-val ((m <BodyPartElm>))
   (roslisp-msg-protocol:msg-deprecation-warning "Using old-style slot reader feature_recon-msg:confidence-val is deprecated.  Use feature_recon-msg:confidence instead.")
@@ -68,6 +78,11 @@
     (cl:write-byte (cl:ldb (cl:byte 8 16) bits) ostream)
     (cl:write-byte (cl:ldb (cl:byte 8 24) bits) ostream))
   (cl:let ((bits (roslisp-utils:encode-single-float-bits (cl:slot-value msg 'y))))
+    (cl:write-byte (cl:ldb (cl:byte 8 0) bits) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 8) bits) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 16) bits) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 24) bits) ostream))
+  (cl:let ((bits (roslisp-utils:encode-single-float-bits (cl:slot-value msg 'z))))
     (cl:write-byte (cl:ldb (cl:byte 8 0) bits) ostream)
     (cl:write-byte (cl:ldb (cl:byte 8 8) bits) ostream)
     (cl:write-byte (cl:ldb (cl:byte 8 16) bits) ostream)
@@ -101,6 +116,12 @@
       (cl:setf (cl:ldb (cl:byte 8 8) bits) (cl:read-byte istream))
       (cl:setf (cl:ldb (cl:byte 8 16) bits) (cl:read-byte istream))
       (cl:setf (cl:ldb (cl:byte 8 24) bits) (cl:read-byte istream))
+    (cl:setf (cl:slot-value msg 'z) (roslisp-utils:decode-single-float-bits bits)))
+    (cl:let ((bits 0))
+      (cl:setf (cl:ldb (cl:byte 8 0) bits) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 8) bits) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 16) bits) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 24) bits) (cl:read-byte istream))
     (cl:setf (cl:slot-value msg 'confidence) (roslisp-utils:decode-single-float-bits bits)))
   msg
 )
@@ -112,18 +133,19 @@
   "feature_recon/BodyPartElm")
 (cl:defmethod roslisp-msg-protocol:md5sum ((type (cl:eql '<BodyPartElm>)))
   "Returns md5sum for a message object of type '<BodyPartElm>"
-  "3c847bcc3820e970f5a4eb4a79b2b4d7")
+  "eeee5595dc8784739be4dc17a4ca0b96")
 (cl:defmethod roslisp-msg-protocol:md5sum ((type (cl:eql 'BodyPartElm)))
   "Returns md5sum for a message object of type 'BodyPartElm"
-  "3c847bcc3820e970f5a4eb4a79b2b4d7")
+  "eeee5595dc8784739be4dc17a4ca0b96")
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql '<BodyPartElm>)))
   "Returns full string definition for message of type '<BodyPartElm>"
-  (cl:format cl:nil "uint32 part_id~%float32 x~%float32 y~%float32 confidence~%~%"))
+  (cl:format cl:nil "uint32 part_id~%float32 x~%float32 y~%float32 z~%float32 confidence~%~%~%"))
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql 'BodyPartElm)))
   "Returns full string definition for message of type 'BodyPartElm"
-  (cl:format cl:nil "uint32 part_id~%float32 x~%float32 y~%float32 confidence~%~%"))
+  (cl:format cl:nil "uint32 part_id~%float32 x~%float32 y~%float32 z~%float32 confidence~%~%~%"))
 (cl:defmethod roslisp-msg-protocol:serialization-length ((msg <BodyPartElm>))
   (cl:+ 0
+     4
      4
      4
      4
@@ -135,5 +157,6 @@
     (cl:cons ':part_id (part_id msg))
     (cl:cons ':x (x msg))
     (cl:cons ':y (y msg))
+    (cl:cons ':z (z msg))
     (cl:cons ':confidence (confidence msg))
 ))

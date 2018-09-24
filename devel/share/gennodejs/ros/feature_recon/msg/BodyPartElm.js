@@ -21,6 +21,7 @@ class BodyPartElm {
       this.part_id = null;
       this.x = null;
       this.y = null;
+      this.z = null;
       this.confidence = null;
     }
     else {
@@ -42,6 +43,12 @@ class BodyPartElm {
       else {
         this.y = 0.0;
       }
+      if (initObj.hasOwnProperty('z')) {
+        this.z = initObj.z
+      }
+      else {
+        this.z = 0.0;
+      }
       if (initObj.hasOwnProperty('confidence')) {
         this.confidence = initObj.confidence
       }
@@ -59,6 +66,8 @@ class BodyPartElm {
     bufferOffset = _serializer.float32(obj.x, buffer, bufferOffset);
     // Serialize message field [y]
     bufferOffset = _serializer.float32(obj.y, buffer, bufferOffset);
+    // Serialize message field [z]
+    bufferOffset = _serializer.float32(obj.z, buffer, bufferOffset);
     // Serialize message field [confidence]
     bufferOffset = _serializer.float32(obj.confidence, buffer, bufferOffset);
     return bufferOffset;
@@ -74,13 +83,15 @@ class BodyPartElm {
     data.x = _deserializer.float32(buffer, bufferOffset);
     // Deserialize message field [y]
     data.y = _deserializer.float32(buffer, bufferOffset);
+    // Deserialize message field [z]
+    data.z = _deserializer.float32(buffer, bufferOffset);
     // Deserialize message field [confidence]
     data.confidence = _deserializer.float32(buffer, bufferOffset);
     return data;
   }
 
   static getMessageSize(object) {
-    return 16;
+    return 20;
   }
 
   static datatype() {
@@ -90,7 +101,7 @@ class BodyPartElm {
 
   static md5sum() {
     //Returns md5sum for a message object
-    return '3c847bcc3820e970f5a4eb4a79b2b4d7';
+    return 'eeee5595dc8784739be4dc17a4ca0b96';
   }
 
   static messageDefinition() {
@@ -99,7 +110,9 @@ class BodyPartElm {
     uint32 part_id
     float32 x
     float32 y
+    float32 z
     float32 confidence
+    
     `;
   }
 
@@ -128,6 +141,13 @@ class BodyPartElm {
     }
     else {
       resolved.y = 0.0
+    }
+
+    if (msg.z !== undefined) {
+      resolved.z = msg.z;
+    }
+    else {
+      resolved.z = 0.0
     }
 
     if (msg.confidence !== undefined) {

@@ -27,12 +27,14 @@ struct BodyPartElm_
     : part_id(0)
     , x(0.0)
     , y(0.0)
+    , z(0.0)
     , confidence(0.0)  {
     }
   BodyPartElm_(const ContainerAllocator& _alloc)
     : part_id(0)
     , x(0.0)
     , y(0.0)
+    , z(0.0)
     , confidence(0.0)  {
   (void)_alloc;
     }
@@ -47,6 +49,9 @@ struct BodyPartElm_
 
    typedef float _y_type;
   _y_type y;
+
+   typedef float _z_type;
+  _z_type z;
 
    typedef float _confidence_type;
   _confidence_type confidence;
@@ -129,12 +134,12 @@ struct MD5Sum< ::feature_recon::BodyPartElm_<ContainerAllocator> >
 {
   static const char* value()
   {
-    return "3c847bcc3820e970f5a4eb4a79b2b4d7";
+    return "eeee5595dc8784739be4dc17a4ca0b96";
   }
 
   static const char* value(const ::feature_recon::BodyPartElm_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0x3c847bcc3820e970ULL;
-  static const uint64_t static_value2 = 0xf5a4eb4a79b2b4d7ULL;
+  static const uint64_t static_value1 = 0xeeee5595dc878473ULL;
+  static const uint64_t static_value2 = 0x9be4dc17a4ca0b96ULL;
 };
 
 template<class ContainerAllocator>
@@ -156,6 +161,7 @@ struct Definition< ::feature_recon::BodyPartElm_<ContainerAllocator> >
     return "uint32 part_id\n\
 float32 x\n\
 float32 y\n\
+float32 z\n\
 float32 confidence\n\
 ";
   }
@@ -178,6 +184,7 @@ namespace serialization
       stream.next(m.part_id);
       stream.next(m.x);
       stream.next(m.y);
+      stream.next(m.z);
       stream.next(m.confidence);
     }
 
@@ -203,6 +210,8 @@ struct Printer< ::feature_recon::BodyPartElm_<ContainerAllocator> >
     Printer<float>::stream(s, indent + "  ", v.x);
     s << indent << "y: ";
     Printer<float>::stream(s, indent + "  ", v.y);
+    s << indent << "z: ";
+    Printer<float>::stream(s, indent + "  ", v.z);
     s << indent << "confidence: ";
     Printer<float>::stream(s, indent + "  ", v.confidence);
   }

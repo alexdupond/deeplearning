@@ -115,12 +115,12 @@ struct MD5Sum< ::feature_recon::Person_<ContainerAllocator> >
 {
   static const char* value()
   {
-    return "77159240dfbac2f3737aaebf05ff898d";
+    return "71df5a728503c3e077184dbd734a3f82";
   }
 
   static const char* value(const ::feature_recon::Person_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0x77159240dfbac2f3ULL;
-  static const uint64_t static_value2 = 0x737aaebf05ff898dULL;
+  static const uint64_t static_value1 = 0x71df5a728503c3e0ULL;
+  static const uint64_t static_value2 = 0x77184dbd734a3f82ULL;
 };
 
 template<class ContainerAllocator>
@@ -145,6 +145,7 @@ MSG: feature_recon/BodyPartElm\n\
 uint32 part_id\n\
 float32 x\n\
 float32 y\n\
+float32 z\n\
 float32 confidence\n\
 ";
   }

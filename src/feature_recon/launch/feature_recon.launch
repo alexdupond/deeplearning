@@ -7,11 +7,13 @@
     <!-- <arg name="model" default="cmu" /> -->
     <arg name="resolution" default="432x368" />
     <arg name="rgb" default="/camera/rgb/image_raw" />
+    <arg name="pointcloud" default="/camera/depth/points" />
     <arg name="img_show" default="false" />
 
     <node name="feature_recon" pkg="feature_recon" type="broadcaster_ros.py" output="screen" required="true">
         <env name="CUDA_VISIBLE_DEVICES" value="$(arg gpuid)" />
         <param name="rgb" value="$(arg rgb)" />
+        <param name="pointcloud" value="$(arg pointcloud)" />
         <param name="model" value="$(arg model)" />
         <param name="resolution" value="$(arg resolution)" />
     </node>

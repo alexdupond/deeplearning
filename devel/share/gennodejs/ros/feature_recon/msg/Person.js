@@ -58,7 +58,7 @@ class Person {
 
   static getMessageSize(object) {
     let length = 0;
-    length += 16 * object.body_part.length;
+    length += 20 * object.body_part.length;
     return length + 4;
   }
 
@@ -69,7 +69,7 @@ class Person {
 
   static md5sum() {
     //Returns md5sum for a message object
-    return '77159240dfbac2f3737aaebf05ff898d';
+    return '71df5a728503c3e077184dbd734a3f82';
   }
 
   static messageDefinition() {
@@ -81,7 +81,9 @@ class Person {
     uint32 part_id
     float32 x
     float32 y
+    float32 z
     float32 confidence
+    
     `;
   }
 
