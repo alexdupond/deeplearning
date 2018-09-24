@@ -140,6 +140,7 @@ struct Definition< ::feature_recon::Person_<ContainerAllocator> >
   static const char* value()
   {
     return "BodyPartElm[] body_part\n\
+\n\
 ================================================================================\n\
 MSG: feature_recon/BodyPartElm\n\
 uint32 part_id\n\

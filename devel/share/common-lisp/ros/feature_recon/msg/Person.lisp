@@ -64,10 +64,10 @@
   "71df5a728503c3e077184dbd734a3f82")
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql '<Person>)))
   "Returns full string definition for message of type '<Person>"
-  (cl:format cl:nil "BodyPartElm[] body_part~%================================================================================~%MSG: feature_recon/BodyPartElm~%uint32 part_id~%float32 x~%float32 y~%float32 z~%float32 confidence~%~%~%"))
+  (cl:format cl:nil "BodyPartElm[] body_part~%~%================================================================================~%MSG: feature_recon/BodyPartElm~%uint32 part_id~%float32 x~%float32 y~%float32 z~%float32 confidence~%~%~%"))
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql 'Person)))
   "Returns full string definition for message of type 'Person"
-  (cl:format cl:nil "BodyPartElm[] body_part~%================================================================================~%MSG: feature_recon/BodyPartElm~%uint32 part_id~%float32 x~%float32 y~%float32 z~%float32 confidence~%~%~%"))
+  (cl:format cl:nil "BodyPartElm[] body_part~%~%================================================================================~%MSG: feature_recon/BodyPartElm~%uint32 part_id~%float32 x~%float32 y~%float32 z~%float32 confidence~%~%~%"))
 (cl:defmethod roslisp-msg-protocol:serialization-length ((msg <Person>))
   (cl:+ 0
      4 (cl:reduce #'cl:+ (cl:slot-value msg 'body_part) :key #'(cl:lambda (ele) (cl:declare (cl:ignorable ele)) (cl:+ (roslisp-msg-protocol:serialization-length ele))))

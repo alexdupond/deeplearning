@@ -110,6 +110,7 @@ Header header
 ================================================================================
 MSG: feature_recon/Person
 BodyPartElm[] body_part
+
 ================================================================================
 MSG: feature_recon/BodyPartElm
 uint32 part_id

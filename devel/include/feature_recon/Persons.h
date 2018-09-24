@@ -162,6 +162,7 @@ Header header\n\
 ================================================================================\n\
 MSG: feature_recon/Person\n\
 BodyPartElm[] body_part\n\
+\n\
 ================================================================================\n\
 MSG: feature_recon/BodyPartElm\n\
 uint32 part_id\n\

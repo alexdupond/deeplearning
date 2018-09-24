@@ -65,6 +65,7 @@
 (setf (get feature_recon::Person :datatype-) "feature_recon/Person")
 (setf (get feature_recon::Person :definition-)
       "BodyPartElm[] body_part
+
 ================================================================================
 MSG: feature_recon/BodyPartElm
 uint32 part_id

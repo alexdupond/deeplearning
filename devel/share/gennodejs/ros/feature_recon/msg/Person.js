@@ -76,6 +76,7 @@ class Person {
     // Returns full string definition for message
     return `
     BodyPartElm[] body_part
+    
     ================================================================================
     MSG: feature_recon/BodyPartElm
     uint32 part_id

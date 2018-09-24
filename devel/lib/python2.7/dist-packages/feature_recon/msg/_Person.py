@@ -12,6 +12,7 @@ class Person(genpy.Message):
   _type = "feature_recon/Person"
   _has_header = False #flag to mark the presence of a Header object
   _full_text = """BodyPartElm[] body_part
+
 ================================================================================
 MSG: feature_recon/BodyPartElm
 uint32 part_id
