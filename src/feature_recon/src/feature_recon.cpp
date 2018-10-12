@@ -1,34 +1,42 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+#include "feature_recon/Persons.h"
+#include "feature_recon/Person.h"
+#include "feature_recon/BodyPartElm.h"
 #include <sstream>
+#include <string>
+
+using namespace std;
+
+void callback(const feature_recon::Persons::ConstPtr& msg){
+  if(msg->persons.size()){
+    if(msg->persons[0].body_part.size()){
+      for (int i = 0; i < msg->persons[0].body_part.size(); i++) {
+        if(msg->persons[0].body_part[i].part_id == 0){
+          cout << "Body part location - x: " << msg->persons[0].body_part[i].x << ", y: " << msg->persons[0].body_part[i].y  << ", z: " << msg->persons[0].body_part[i].z<< endl;
+        }
+      }
+    }
+  }
+}
+
 
 int main(int argc, char **argv)
 {
 
-ros::init(argc, argv, "talker");
+ros::init(argc, argv, "deature_recon");
 
 ros::NodeHandle n;
 
-ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 1000);
+ros::Subscriber get_features = n.subscribe("broadcaster/poses", 1, callback);
+
 ros::Rate loop_rate(10);
-int count = 0;
 
-{
-  while (ros::ok()) 
 
-std_msgs::String msg;
-std::stringstream ss;
-ss << "hello world " << count;
-msg.data = ss.str();
+while (ros::ok()){
 
-ROS_INFO("%s", msg.data.c_str());
-
-chatter_pub.publish(msg);
-
-ros::spinOnce();
-
-loop_rate.sleep();
-++count;
+  ros::spinOnce();
+  loop_rate.sleep();
 }
 
 return 0;

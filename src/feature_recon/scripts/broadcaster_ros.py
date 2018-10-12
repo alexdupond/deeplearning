@@ -63,10 +63,10 @@ def humans_to_msg(humans, cloud):
         persons.persons.append(person)
     #rospy.loginfo("Rigth ear size = %d, left ear size = %d" % (len(rigth_ear), len(left_ear)))
 
-    if len(humans) > 0 and len(rigth_shoulder) >= 3 and len(left_shoulder) >= 3: #and humans[0].body_parts[16].x != "nan" and humans[0].body_parts[17].x != "nan":
-        avg_confi = (rigth_shoulder[3]+left_shoulder[3])/2
-        if avg_confi > 0.55:
-            rospy.loginfo("Distance between shoulders: %f  - Confidence avg: %f" % (get_3d_distance(rigth_shoulder, left_shoulder), avg_confi))
+#    if len(humans) > 0 and len(rigth_shoulder) >= 3 and len(left_shoulder) >= 3: #and humans[0].body_parts[16].x != "nan" and humans[0].body_parts[17].x != "nan":
+#        avg_confi = (rigth_shoulder[3]+left_shoulder[3])/2
+#        if avg_confi > 0.55:
+#            rospy.loginfo("Distance between shoulders: %f  - Confidence avg: %f" % (get_3d_distance(rigth_shoulder, left_shoulder), avg_confi))
     return persons
 
 
@@ -95,7 +95,6 @@ def callback_image(data, cloud):
     msg.image_w = data.width
     msg.image_h = data.height
     msg.header = data.header
-    rospy.loginfo("Message publishing!")
     pub_pose.publish(msg)
 
 
@@ -131,13 +130,13 @@ if __name__ == '__main__':
 
     image_sub = message_filters.Subscriber(image_topic, Image)
     point_sub = message_filters.Subscriber(cloud_topic, PointCloud2)
-    ts = message_filters.ApproximateTimeSynchronizer([image_sub, point_sub], 1, 0.1)
+    ts = message_filters.ApproximateTimeSynchronizer([image_sub, point_sub], 10, 0.1)
     ts.registerCallback(callback_image)
 
  #   rospy.Subscriber(pointcloud, PointCloud2, callback_3d_mapping, queue_size=1, buff_size=2**24)
 
   #  rospy.Subscriber(image_topic, Image, callback_image, queue_size=1, buff_size=2**24)
-    pub_pose = rospy.Publisher('~pose', Persons, queue_size=1)
+    pub_pose = rospy.Publisher('~poses', Persons, queue_size=1)
     pub_img = rospy.Publisher('~image', Image, queue_size=1)
 
     rospy.loginfo('start+')
