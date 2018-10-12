@@ -27,7 +27,19 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS rospy message_generation message_runtime
+  CATKIN_DEPENDS rospy message_generation message_runtime roscpp
+)
+
+catkin_package()
+
+include_directories(
+    include
+    ${catkin_INCLUDE_DIRS}
 )
 
 install()
+
+add_executable(feature_recon_node src/feature_recon.cpp)
+add_dependencies(feature_recon_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+target_link_libraries(feature_recon_node ${catkin_LIBRARIES})

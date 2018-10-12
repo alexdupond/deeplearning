@@ -90,6 +90,7 @@ def callback_image(data, cloud):
     msg.image_w = data.width
     msg.image_h = data.height
     msg.header = data.header
+    rospy.loginfo("Message publishing!")
     pub_pose.publish(msg)
 
 
@@ -125,7 +126,7 @@ if __name__ == '__main__':
 
     image_sub = message_filters.Subscriber(image_topic, Image)
     point_sub = message_filters.Subscriber(cloud_topic, PointCloud2)
-    ts = message_filters.ApproximateTimeSynchronizer([image_sub, point_sub], queue_size=10, slop=0.1)
+    ts = message_filters.ApproximateTimeSynchronizer([image_sub, point_sub], 1, 0.1)
     ts.registerCallback(callback_image)
 
  #   rospy.Subscriber(pointcloud, PointCloud2, callback_3d_mapping, queue_size=1, buff_size=2**24)
