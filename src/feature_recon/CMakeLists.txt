@@ -4,6 +4,12 @@ project(feature_recon)
 ## Add support for C++11, supported in ROS Kinetic and newer
 add_definitions(-std=c++11)
 
+# Automatically look in current dir for #included files
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+# Instruct CMake to run moc automatically when needed.
+set(CMAKE_AUTOMOC ON)
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -27,7 +33,18 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS rospy message_generation message_runtime
+  CATKIN_DEPENDS rospy message_generation message_runtime roscpp
+)
+
+catkin_package()
+
+include_directories(
+    include
+    ${catkin_INCLUDE_DIRS}
 )
 
 install()
+
+add_executable(feature_recon_node src/feature_recon.cpp)
+target_link_libraries(feature_recon_node ${catkin_LIBRARIES})
+add_dependencies(feature_recon_node ${${PROJECT_NAME}_EXPORTED_TARGETS})

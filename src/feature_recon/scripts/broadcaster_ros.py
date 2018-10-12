@@ -46,22 +46,27 @@ def humans_to_msg(humans, cloud):
             body_part_msg.x = read_depth(int(body_part.x*640), int(body_part.y*480), cloud)[0]
             body_part_msg.y = read_depth(int(body_part.x*640), int(body_part.y*480), cloud)[1]
             body_part_msg.z = read_depth(int(body_part.x*640), int(body_part.y*480), cloud)[2]
+            body_part_msg.confidence = body_part.score
             if body_part_msg.part_id == 2:
                 #rospy.loginfo('Rigth shoulder - x: %f, y: %f, z: %f' % (body_part_msg.x, body_part_msg.y, body_part_msg.z))
                 rigth_shoulder.append(body_part_msg.x)
                 rigth_shoulder.append(body_part_msg.y)
                 rigth_shoulder.append(body_part_msg.z)
+                rigth_shoulder.append(body_part_msg.confidence)
             if body_part_msg.part_id == 5:
                 #rospy.loginfo('Left shoulder - x: %f, y: %f, z: %f' % (body_part_msg.x, body_part_msg.y, body_part_msg.z))
                 left_shoulder.append(body_part_msg.x)
                 left_shoulder.append(body_part_msg.y)
                 left_shoulder.append(body_part_msg.z)
-            body_part_msg.confidence = body_part.score
+                left_shoulder.append(body_part_msg.confidence)
             person.body_part.append(body_part_msg)
         persons.persons.append(person)
     #rospy.loginfo("Rigth ear size = %d, left ear size = %d" % (len(rigth_ear), len(left_ear)))
-    if len(humans) > 0 and len(rigth_shoulder) == 3 and len(left_shoulder) == 3: #and humans[0].body_parts[16].x != "nan" and humans[0].body_parts[17].x != "nan":
-        rospy.loginfo("Distance between shoulders: %f" % (get_3d_distance(rigth_shoulder, left_shoulder)))
+
+    if len(humans) > 0 and len(rigth_shoulder) >= 3 and len(left_shoulder) >= 3: #and humans[0].body_parts[16].x != "nan" and humans[0].body_parts[17].x != "nan":
+        avg_confi = (rigth_shoulder[3]+left_shoulder[3])/2
+        if avg_confi > 0.55:
+            rospy.loginfo("Distance between shoulders: %f  - Confidence avg: %f" % (get_3d_distance(rigth_shoulder, left_shoulder), avg_confi))
     return persons
 
 
