@@ -46,5 +46,11 @@ include_directories(
 install()
 
 add_executable(feature_recon_node src/feature_recon.cpp)
+<<<<<<< HEAD
 target_link_libraries(feature_recon_node ${catkin_LIBRARIES})
 add_dependencies(feature_recon_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+=======
+add_dependencies(feature_recon_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+target_link_libraries(feature_recon_node ${catkin_LIBRARIES})
+>>>>>>> 8fdd0c14c891700c61e3781058e56506a39b731e

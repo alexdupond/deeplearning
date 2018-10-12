@@ -7,7 +7,7 @@
     <!-- <arg name="model" default="cmu" /> -->
     <arg name="resolution" default="432x368" />
     <arg name="rgb" default="/camera/rgb/image_raw" />
-    <arg name="pointcloud" default="/camera/depth/points" />
+    <arg name="pointcloud" default="/camera/depth_registered/points" />
     <arg name="img_show" default="false" />
 
     <node name="broadcaster" pkg="feature_recon" type="broadcaster_ros.py" output="screen" required="true">
@@ -24,5 +24,7 @@
         <remap from="image" to="/pose_estimator/image"/>
         <param name="autosize" value="true" />
     </node>
+
+    <node name="feature_recon" pkg="feature_recon" type="feature_recon_node" output="screen" required="true"></node>
 
 </launch>
