@@ -7,6 +7,7 @@
 #include <string>
 #include <cmath>
 #include <algorithm>
+#include <fstream>
 
 using namespace std;
 
@@ -34,6 +35,7 @@ public:
   double calDistance(feature_recon::BodyPartElm first, feature_recon::BodyPartElm secound);
   body_limb isBodyPair(feature_recon::BodyPartElm first, feature_recon::BodyPartElm secound);
   void printHuman();
+  void saveLimbToFile(body_limb limb);
 
 private:
   ros::NodeHandle nh;
@@ -43,6 +45,10 @@ private:
 
 FeatureExtractor::FeatureExtractor(ros::NodeHandle &node_handle): nh (node_handle){
   extract_features_sub =  nh.subscribe("broadcaster/poses", 1, &FeatureExtractor::callback, this);
+
+  for (int i = 0; i < 21; i++) {
+    human[i].id = -1;
+  }
 }
 
 void FeatureExtractor::callback(const feature_recon::Persons::ConstPtr& msg){
@@ -53,18 +59,18 @@ void FeatureExtractor::callback(const feature_recon::Persons::ConstPtr& msg){
         for (int j = 0; j+i < msg->persons[0].body_part.size(); j++) {        // And compare to each body part
           current_limb = isBodyPair(msg->persons[0].body_part[i], msg->persons[0].body_part[i+j]);
           if(current_limb.id != -1){
-            if(human[current_limb.id-1].id == 0){
+            saveLimbToFile(current_limb);
+            if(human[current_limb.id].id == -1){
             //ROS_INFO("ADDED: Body limb %s(%d) of length %f found with conficence of %f", current_limb.name.c_str(),current_limb.id, current_limb.length, current_limb.joint_confidence);
-            printHuman();
-            human[current_limb.id-1] = current_limb;
-          }else if(human[current_limb.id-1].joint_confidence < current_limb.joint_confidence){
-            human[current_limb.id-1] = current_limb;
-            printHuman();
+            human[current_limb.id] = current_limb;
+          }else if(human[current_limb.id].joint_confidence < current_limb.joint_confidence){
+            human[current_limb.id] = current_limb;
             //ROS_INFO("UPDATED: Body limb %s(%d) of length %f found with conficence of %f", current_limb.name.c_str(),current_limb.id, current_limb.length, current_limb.joint_confidence);
           }
           }
         }
       }
+      printHuman();
     }
   }
 }
@@ -77,22 +83,22 @@ body_limb FeatureExtractor::isBodyPair(feature_recon::BodyPartElm first, feature
   body_limb new_limb{};
   new_limb.id = -1;
 
-  part_to_limb idPairs[18][4] = {{{14, 1, "nose_to_r_eye"}, {15, 2, "nose_to_l_eye"}, {16, 3, "nose_to_r_ear"}, {17, 4, "nose_to_l_ear"}},
-                        {{2, 5, "midt_to_r_shoulder"}, {5, 6, "midt_to_l_shoulder"}, {8, 7, "midt_to_r_hip"}, {11, 8, "midt_to_l_hip"}},
-                        {{3,9, "right_upper_arm"}, {5, 10,"db_shoulders"}, {-1, -1,""}, {-1, -1,""}},
-                        {{4,11, "right_lower_arm"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
+  part_to_limb idPairs[18][4] = {{{14, 0, "nose_to_r_eye"}, {15, 1, "nose_to_l_eye"}, {16, 2, "nose_to_r_ear"}, {17, 3, "nose_to_l_ear"}},
+                        {{2, 4, "midt_to_r_shoulder"}, {5, 5, "midt_to_l_shoulder"}, {8, 6, "midt_to_r_hip"}, {11, 7, "midt_to_l_hip"}},
+                        {{3,8, "right_upper_arm"}, {5, 9,"db_shoulders"}, {-1, -1,""}, {-1, -1,""}},
+                        {{4,10, "right_lower_arm"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
                         {{-1, -1,""}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
-                        {{6,12,"left_upper_arm"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
-                        {{7,13, "left_lower_arm"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
+                        {{6,11,"left_upper_arm"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
+                        {{7,12, "left_lower_arm"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
                         {{-1, -1,""}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
-                        {{9,14, "right_thigh"}, {11, 15, "db_hips"}, {-1, -1,""}, {-1, -1,""}},
-                        {{10, 16,"right_calf"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
+                        {{9,13, "right_thigh"}, {11, 14, "db_hips"}, {-1, -1,""}, {-1, -1,""}},
+                        {{10, 15,"right_calf"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
                         {{-1, -1,""}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
-                        {{12, 17,"left_thigh"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
-                        {{13, 18,"left_calf"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
+                        {{12, 16,"left_thigh"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
+                        {{13, 17,"left_calf"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
                         {{-1, -1,""}, {-1, -1,""},{-1, -1,""}, {-1, -1,""}},
-                        {{15, 19,"db_eyes"}, {16,20,"eye_to_ear_r"}, {-1, -1,""}, {-1, -1,""}},
-                        {{17, 21,"eye_to_ear_l"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
+                        {{15, 18,"db_eyes"}, {16,19,"eye_to_ear_r"}, {-1, -1,""}, {-1, -1,""}},
+                        {{17, 20,"eye_to_ear_l"}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
                         {{-1, -1,""}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}},
                         {{-1, -1,""}, {-1, -1,""}, {-1, -1,""}, {-1, -1,""}}
                       };
@@ -116,12 +122,26 @@ body_limb FeatureExtractor::isBodyPair(feature_recon::BodyPartElm first, feature
 
 void FeatureExtractor::printHuman(){
   for (int i = 0; i < 21; i++) {
-    ROS_INFO("ID: %d, Length %f , Conficence: %f, Name: %s",human[i].id, human[i].length, human[i].joint_confidence, human[i].name.c_str());
+    if(human[i].id != -1)
+      ROS_INFO("ID: %d, Length %f , Conficence: %f, Name: %s",human[i].id, human[i].length, human[i].joint_confidence, human[i].name.c_str());
   }
   ROS_INFO("--");
   ROS_INFO("--");
   ROS_INFO("--");
 
+}
+
+void FeatureExtractor::saveLimbToFile(body_limb limb){
+  if(limb.length && limb.joint_confidence){
+  ofstream newfile;
+  string str;
+  str.append("/home/alexdupond/data/");
+  str.append(limb.name);
+  str.append(".txt");
+  newfile.open(str, ios_base::app);
+  newfile << limb.length << ", " << limb.joint_confidence << "\n";
+  newfile.close();
+}
 }
 
 int main(int argc, char **argv)
