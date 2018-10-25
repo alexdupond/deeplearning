@@ -4,3 +4,7 @@ Feature_recon_ws.workspace.user
 devel/
 logs/
 install/
+
+src/\.idea/misc\.xml
+
+src/\.idea/
