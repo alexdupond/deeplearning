@@ -27,13 +27,20 @@ def read_depth(width, height, data) :
     int_data = next(data_out)
     return int_data
 
+def median(x, y, cloud) :
+    items = []
+    for i in range(-1,2):
+        for j in range(-1, 2):
+            items.append(read_depth(x,y,cloud)[2])
+    items.sort()
+    print(items)
+    return items[len(items)//2]
+
 def get_3d_distance(body_part_1, body_part_2):
     return math.sqrt(math.pow(body_part_2[0] - body_part_1[0], 2) + math.pow(body_part_2[1] - body_part_1[1], 2) + math.pow(body_part_2[2] - body_part_1[2], 2))
 
 def humans_to_msg(humans, cloud):
     persons = Persons()
-    rigth_shoulder = []
-    left_shoulder = []
 
     for human in humans:
         person = Person()
@@ -45,28 +52,10 @@ def humans_to_msg(humans, cloud):
             body_part_msg.part_id = body_part.part_idx
             body_part_msg.x = read_depth(int(body_part.x*640), int(body_part.y*480), cloud)[0]
             body_part_msg.y = read_depth(int(body_part.x*640), int(body_part.y*480), cloud)[1]
-            body_part_msg.z = read_depth(int(body_part.x*640), int(body_part.y*480), cloud)[2]
+            body_part_msg.z = median(int(body_part.x*640), int(body_part.y*480), cloud)
             body_part_msg.confidence = body_part.score
-            if body_part_msg.part_id == 2:
-                #rospy.loginfo('Rigth shoulder - x: %f, y: %f, z: %f' % (body_part_msg.x, body_part_msg.y, body_part_msg.z))
-                rigth_shoulder.append(body_part_msg.x)
-                rigth_shoulder.append(body_part_msg.y)
-                rigth_shoulder.append(body_part_msg.z)
-                rigth_shoulder.append(body_part_msg.confidence)
-            if body_part_msg.part_id == 5:
-                #rospy.loginfo('Left shoulder - x: %f, y: %f, z: %f' % (body_part_msg.x, body_part_msg.y, body_part_msg.z))
-                left_shoulder.append(body_part_msg.x)
-                left_shoulder.append(body_part_msg.y)
-                left_shoulder.append(body_part_msg.z)
-                left_shoulder.append(body_part_msg.confidence)
             person.body_part.append(body_part_msg)
         persons.persons.append(person)
-    #rospy.loginfo("Rigth ear size = %d, left ear size = %d" % (len(rigth_ear), len(left_ear)))
-
-#    if len(humans) > 0 and len(rigth_shoulder) >= 3 and len(left_shoulder) >= 3: #and humans[0].body_parts[16].x != "nan" and humans[0].body_parts[17].x != "nan":
-#        avg_confi = (rigth_shoulder[3]+left_shoulder[3])/2
-#        if avg_confi > 0.55:
-#            rospy.loginfo("Distance between shoulders: %f  - Confidence avg: %f" % (get_3d_distance(rigth_shoulder, left_shoulder), avg_confi))
     return persons
 
 
