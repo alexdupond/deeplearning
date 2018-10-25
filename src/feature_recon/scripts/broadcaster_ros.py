@@ -31,9 +31,9 @@ def median(x, y, cloud) :
     items = []
     for i in range(-1,2):
         for j in range(-1, 2):
-            items.append(read_depth(x,y,cloud)[2])
+            items.append(read_depth(x-i,y-j,cloud)[2])
     items.sort()
-    print(items)
+    #print("Minimum: ", items[0], ", Maximum: ", items[len(items)-1])
     return items[len(items)//2]
 
 def get_3d_distance(body_part_1, body_part_2):
@@ -47,14 +47,17 @@ def humans_to_msg(humans, cloud):
 
         for k in human.body_parts:
             body_part = human.body_parts[k]
-
             body_part_msg = BodyPartElm()
             body_part_msg.part_id = body_part.part_idx
-            body_part_msg.x = read_depth(int(body_part.x*640), int(body_part.y*480), cloud)[0]
-            body_part_msg.y = read_depth(int(body_part.x*640), int(body_part.y*480), cloud)[1]
+            depth_list = read_depth(int(body_part.x*640), int(body_part.y*480), cloud);
+            body_part_msg.x = depth_list[0]
+            body_part_msg.y = depth_list[1]
             body_part_msg.z = median(int(body_part.x*640), int(body_part.y*480), cloud)
             body_part_msg.confidence = body_part.score
-            person.body_part.append(body_part_msg)
+            if not(math.isnan(body_part_msg.x) and math.isnan(body_part_msg.y) and math.isnan(body_part_msg.z)) :
+                #print(body_part_msg.x, ", ", body_part_msg.y, ", ", body_part_msg.z);
+                person.body_part.append(body_part_msg)
+            print("Body parts = ", len(person.body_part))
         persons.persons.append(person)
     return persons
 
