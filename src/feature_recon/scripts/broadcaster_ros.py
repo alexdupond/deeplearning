@@ -19,6 +19,10 @@ from feature_recon.msg import Persons, Person, BodyPartElm
 from tf_pose.estimator import TfPoseEstimator
 from tf_pose.networks import model_wh, get_graph_path
 
+import face_recognition
+import glob
+import numpy as np
+
 def read_depth(width, height, data) :
     # read function
     if (height >= data.height) or (width >= data.width) :
@@ -55,6 +59,15 @@ def humans_to_msg(humans, cloud):
             body_part_msg.z = median(int(body_part.x*640), int(body_part.y*480), cloud)
             body_part_msg.confidence = body_part.score
             person.body_part.append(body_part_msg)
+
+        face_box = human.get_face_box(640, 480)
+        if face_box is not None:
+            top, right, bottom, left = face_box['y'] - (face_box['h'] // 2), face_box['x'] + (face_box['w'] // 2), \
+                                       face_box['y'] + (face_box['h'] // 2), face_box['x'] - (face_box['w'] // 2)
+            face = face_recognition.face_encodings(cv_image, [(top, right, bottom, left)])
+            if len(face) > 0:
+                person.encoding = face[0]
+
         persons.persons.append(person)
     return persons
 
