@@ -43,7 +43,7 @@ def median(x, y, cloud) :
 def get_3d_distance(body_part_1, body_part_2):
     return math.sqrt(math.pow(body_part_2[0] - body_part_1[0], 2) + math.pow(body_part_2[1] - body_part_1[1], 2) + math.pow(body_part_2[2] - body_part_1[2], 2))
 
-def humans_to_msg(humans, cloud):
+def humans_to_msg(humans, cloud, cv_image):
     persons = Persons()
 
     for human in humans:
@@ -62,7 +62,6 @@ def humans_to_msg(humans, cloud):
             if not(math.isnan(body_part_msg.x) and math.isnan(body_part_msg.y) and math.isnan(body_part_msg.z)) :
                 #print(body_part_msg.x, ", ", body_part_msg.y, ", ", body_part_msg.z);
                 person.body_part.append(body_part_msg)
-            print("Body parts = ", len(person.body_part))
 
         face_box = human.get_face_box(640, 480)
         if face_box is not None:
@@ -98,7 +97,7 @@ def callback_image(data, cloud):
     image = pose_estimator.draw_humans(cv_image, humans)
     image_msg = cv_bridge.cv2_to_imgmsg(image, encoding='bgr8')
     pub_img.publish(image_msg)
-    msg = humans_to_msg(humans, cloud)
+    msg = humans_to_msg(humans, cloud, cv_image)
     msg.image_w = data.width
     msg.image_h = data.height
     msg.header = data.header
