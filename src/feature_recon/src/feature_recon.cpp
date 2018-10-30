@@ -7,19 +7,25 @@
 #include <string>
 #include <cmath>
 #include <algorithm>
+#include <iterator>
 #include <fstream>
 
 using namespace std;
 
 #define MAX_SMA_SIZE 5
 
+struct body_limb_info{
+  double length;
+  double joint_confidence;
+};
+
 struct body_limb{
   int id;
   string name;
 //  feature_recon::BodyPartElm body_part_1;
 //  feature_recon::BodyPartElm body_part_2;
-  double length;
-  double joint_confidence;
+  vector<body_limb_info> info_list{};
+  body_limb_info avg_info;
 };
 
 struct part_to_limb{
@@ -42,21 +48,17 @@ public:
 private:
   ros::NodeHandle nh;
   ros::Subscriber extract_features_sub;
-  vector<body_limb> human[21]{};
-  body_limb human_avg[21]{};
+  body_limb human[21]{};
 };
 
 FeatureExtractor::FeatureExtractor(ros::NodeHandle &node_handle): nh (node_handle){
   extract_features_sub =  nh.subscribe("broadcaster/poses", 1, &FeatureExtractor::callback, this);
 
     for (int i = 0; i < 21; i++) {
-      human_avg[i].id = -1;
+      human[i].id = -1;
     }
 }
 
-bool compare_lengths(const body_limb& a, const body_limb& b){
-  return a.joint_confidence > b.joint_confidence;
-}
 
 void FeatureExtractor::callback(const feature_recon::Persons::ConstPtr& msg){
   body_limb current_limb;
@@ -65,37 +67,58 @@ void FeatureExtractor::callback(const feature_recon::Persons::ConstPtr& msg){
       for (int i = 0; i < msg->persons[0].body_part.size(); i++) {            // Go through each body part
         for (int j = 0; j+i < msg->persons[0].body_part.size(); j++) {        // And compare to each body part
           current_limb = isBodyPair(msg->persons[0].body_part[i], msg->persons[0].body_part[i+j]);
-          // If the current limb is a bodt pair, then ...
-          if(current_limb.id != -1){
+          // If the current limb is a body pair, then ...
+          if((current_limb.id != -1) && current_limb.avg_info.length && current_limb.avg_info.joint_confidence){
             //saveLimbToFile(current_limb);
-            if(human[current_limb.id].size() < MAX_SMA_SIZE){
-              //ROS_INFO("ADDED: Body limb %s(%d) of length %f found with conficence of %f", current_limb.name.c_str(),current_limb.id, current_limb.length, current_limb.joint_confidence);
-              human[current_limb.id].push_back(current_limb);
-              //  }else if(human[current_limb.id].joint_confidence < current_limb.joint_confidence){
-              //    human[current_limb.id] = current_limb;
-              //ROS_INFO("UPDATED: Body limb %s(%d) of length %f found with conficence of %f", current_limb.name.c_str(),current_limb.id, current_limb.length, current_limb.joint_confidence);
-          }else if(current_limb.joint_confidence > human[current_limb.id][human[current_limb.id].size()-1].joint_confidence){
+            // If the info list is empty and the ID is not set jet. Else if check if the max size is reached
+            if(!human[current_limb.id].info_list.size()){
+              human[current_limb.id] = current_limb;
+              human[current_limb.id].info_list.push_back(current_limb.avg_info);
+              //ROS_INFO("1: was added as a limb and pushed to the vector and the size should be 1 = %d", human[current_limb.id].info_list.size() );
+              //ROS_INFO("1: The length = %f, and conf = %f", current_limb.avg_info.length, current_limb.avg_info.joint_confidence);
+              saveLimbToFile(human[current_limb.id]);
+            }else if(human[current_limb.id].info_list.size() < MAX_SMA_SIZE){
+              human[current_limb.id].info_list.push_back(current_limb.avg_info);
+              //ROS_INFO("2 - The length = %f, and conf = %f was added", current_limb.avg_info.length, current_limb.avg_info.joint_confidence);
 
-            if(human_avg[current_limb.id] == -1){
-              human_avg[current_limb.id].id = current_limb.id;
-              human_avg[current_limb.id].name = current_limb.name;
+              double sum = 0;
+              body_limb_info min_body_info = {0, 1.0};
+              for (int k = 0; k < human[current_limb.id].info_list.size(); k++) {
+                if(min_body_info.joint_confidence > human[current_limb.id].info_list[k].joint_confidence){
+                  min_body_info = human[current_limb.id].info_list[k];
+                }
+                sum += human[current_limb.id].info_list[k].length;
+              }
+              human[current_limb.id].avg_info.length = sum/human[current_limb.id].info_list.size();
+              human[current_limb.id].avg_info.joint_confidence = min_body_info.joint_confidence;
+              //ROS_INFO("2: Added as a limb and pushed to the vector - Size: %d", human[current_limb.id].info_list.size() );
+              //ROS_INFO("2: New calculated avg of %f from %d number of values", human[current_limb.id].avg_info.length, human[current_limb.id].info_list.size() );
+              saveLimbToFile(human[current_limb.id]);
+            }else if(current_limb.avg_info.joint_confidence > human[current_limb.id].avg_info.joint_confidence){
+              double sum = 0;
+              body_limb_info min_body_info = {0, 1.0};
+              //ROS_INFO("BEFORE - Conf: %f, %f, %f, %f, %f", human[current_limb.id].info_list[0].joint_confidence, human[current_limb.id].info_list[1].joint_confidence, human[current_limb.id].info_list[2].joint_confidence, human[current_limb.id].info_list[3].joint_confidence, human[current_limb.id].info_list[4].joint_confidence, human[current_limb.id].info_list[5].joint_confidence);
+              //ROS_INFO("BEFORE - Length: %f, %f, %f, %f, %f", human[current_limb.id].info_list[0].length, human[current_limb.id].info_list[1].length, human[current_limb.id].info_list[2].length, human[current_limb.id].info_list[3].length, human[current_limb.id].info_list[4].length, human[current_limb.id].info_list[5].length);
+
+              for (int k = 0; k < human[current_limb.id].info_list.size(); k++) {
+                if(human[current_limb.id].avg_info.joint_confidence == human[current_limb.id].info_list[k].joint_confidence){
+                  human[current_limb.id].info_list[k] = current_limb.avg_info;
+                  //cout << "The current joint confidence (" << human[current_limb.id].avg_info.joint_confidence << ") is found in vector index k = " << k << endl;
+                }
+
+                if(min_body_info.joint_confidence > human[current_limb.id].info_list[k].joint_confidence){
+                  min_body_info = human[current_limb.id].info_list[k];
+                }
+                sum += human[current_limb.id].info_list[k].length;
+              }
+              //ROS_INFO("AFTER - Conf: %f, %f, %f, %f, %f", human[current_limb.id].info_list[0].joint_confidence, human[current_limb.id].info_list[1].joint_confidence, human[current_limb.id].info_list[2].joint_confidence, human[current_limb.id].info_list[3].joint_confidence, human[current_limb.id].info_list[4].joint_confidence, human[current_limb.id].info_list[5].joint_confidence);
+              //ROS_INFO("AFTER - Length: %f, %f, %f, %f, %f", human[current_limb.id].info_list[0].length, human[current_limb.id].info_list[1].length, human[current_limb.id].info_list[2].length, human[current_limb.id].info_list[3].length, human[current_limb.id].info_list[4].length, human[current_limb.id].info_list[5].length);
+
+              human[current_limb.id].avg_info.length = sum/human[current_limb.id].info_list.size();
+              human[current_limb.id].avg_info.joint_confidence = min_body_info.joint_confidence;
+              //ROS_INFO("3 - The size new length = %f, and confidence = %f", human[current_limb.id].id, human[current_limb.id].avg_info.length, human[current_limb.id].avg_info.joint_confidence);
+              saveLimbToFile(human[current_limb.id]);
             }
-            sort(human[current_limb.id].begin(), human[current_limb.id].end(), compare_lengths);
-            //cout << "Popping limb with confidence of : " << human[current_limb.id][human[current_limb.id].size()-1].joint_confidence << endl;
-            human[current_limb.id].pop_back();
-            //cout << "Replaced by limb with confidence of : " <<  current_limb.joint_confidence << endl;
-            human[current_limb.id].push_back(current_limb);
-
-            double sum = 0;
-            for (int i = 0; i < human[current_limb.id].size(); i++) {
-              sum += human[current_limb.id][i].length;
-              //cout << "Conficence = " <<  human[current_limb.id][i].joint_confidence << ", and length = " <<  human[current_limb.id][i].length << endl;
-            }
-
-            sort(human[current_limb.id].begin(), human[current_limb.id].end(), compare_lengths);
-            human_avg[current_limb.id].length = sum/(human[current_limb.id].size());
-            human_avg[current_limb.id].joint_confidence = human[current_limb.id][human[current_limb.id].size()-1].joint_confidence;
-          }
           }
         }
       }
@@ -139,8 +162,8 @@ body_limb FeatureExtractor::isBodyPair(feature_recon::BodyPartElm first, feature
     //  new_limb.body_part_1 = first;
       //new_limb.body_part_2 = second;
       if(!isnan(calDistance(first, second))){
-        new_limb.joint_confidence = min(first.confidence, second.confidence);
-        new_limb.length = calDistance(first, second);
+        new_limb.avg_info.joint_confidence = min(first.confidence, second.confidence);
+        new_limb.avg_info.length = calDistance(first, second);
       }
       return new_limb;
     }
@@ -151,9 +174,9 @@ body_limb FeatureExtractor::isBodyPair(feature_recon::BodyPartElm first, feature
 
 void FeatureExtractor::printHuman(){
   for (int i = 0; i < 21; i++) {
-    if(human_avg[i].id != -1){
-      saveLimbToFile(human_avg[i]);
-      ROS_INFO("ID: %d, Length %f , Conficence: %f, Name: %s",human_avg[i].id, human_avg[i].length, human_avg[i].joint_confidence, human_avg[i].name.c_str());
+    if(human[i].id != -1){
+      saveLimbToFile(human[i]);
+      ROS_INFO("ID: %d, Length %f , Conficence: %f, Name: %s",human[i].id, human[i].avg_info.length, human[i].avg_info.joint_confidence, human[i].name.c_str());
     }
   }
   ROS_INFO("--");
@@ -163,16 +186,16 @@ void FeatureExtractor::printHuman(){
 }
 
 void FeatureExtractor::saveLimbToFile(body_limb limb){
-  if(limb.length && limb.joint_confidence){
-  ofstream newfile;
-  string str;
-  str.append("/home/alexdupond/data/");
-  str.append(limb.name);
-  str.append(".txt");
-  newfile.open(str, ios_base::app);
-  newfile << limb.length << ", " << limb.joint_confidence << "\n";
-  newfile.close();
-}
+  if(limb.avg_info.length && limb.avg_info.joint_confidence){
+    ofstream newfile;
+    string str;
+    str.append("/home/alexdupond/data/");
+    str.append(limb.name);
+    str.append(".txt");
+    newfile.open(str, ios_base::app);
+    newfile << limb.avg_info.length << ", " << limb.avg_info.joint_confidence << "\n";
+    newfile.close();
+  }
 }
 
 int main(int argc, char **argv)
