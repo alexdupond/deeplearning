@@ -34,6 +34,11 @@ struct part_to_limb{
   string name;
 };
 
+struct human_data{
+  vector<double> encoding;
+  vector<body_limb> limbs;
+};
+
 class FeatureExtractor
 {
 public:
@@ -42,24 +47,60 @@ public:
   void callback(const feature_recon::Persons::ConstPtr& msg);
   double calDistance(feature_recon::BodyPartElm first, feature_recon::BodyPartElm secound);
   body_limb isBodyPair(feature_recon::BodyPartElm first, feature_recon::BodyPartElm secound);
-  void printHuman();
+  //void printHuman();
   void saveLimbToFile(body_limb limb);
+  vector<vector<body_limb>> getFacelessHumans();
+  vector<human_data> getCompleteHumans();
+
 
 private:
   ros::NodeHandle nh;
   ros::Subscriber extract_features_sub;
-  body_limb human[21]{};
+  vector<vector<body_limb>> humans_faceless;
+  vector<human_data> humans_complete;
 };
 
 FeatureExtractor::FeatureExtractor(ros::NodeHandle &node_handle): nh (node_handle){
   extract_features_sub =  nh.subscribe("broadcaster/poses", 1, &FeatureExtractor::callback, this);
+}
 
-    for (int i = 0; i < 21; i++) {
-      human[i].id = -1;
-    }
+vector<vector<body_limb>> FeatureExtractor::getFacelessHumans(){
+  return humans_faceless;
+}
+
+vector<human_data> FeatureExtractor::getCompleteHumans(){
+  return humans_complete;
 }
 
 
+void FeatureExtractor::callback(const feature_recon::Persons::ConstPtr& msg){
+  vector<vector<body_limb>> humans_faceless_temp;
+  vector<human_data> humans_complete_temp;
+
+  body_limb current_limb;
+  for (int k = 0; k < msg->persons.size(); k++){                            // Go through all persons
+    vector<body_limb> limbs_temp;
+    for (int i = 0; i < msg->persons[k].body_part.size(); i++) {            // Go through each body part
+      for (int j = 0; j+i < msg->persons[k].body_part.size(); j++) {      // And compare to each body part
+        current_limb = isBodyPair(msg->persons[k].body_part[i], msg->persons[k].body_part[i+j]);
+        if((current_limb.id != -1) && current_limb.avg_info.length && current_limb.avg_info.joint_confidence){         // If the current limb is a body pair, then ...
+          limbs_temp.push_back(current_limb);
+        }
+      }
+    }
+
+    if(msg->persons[k].encoding.size()){
+      human_data human_temp = {msg->persons[k].encoding, limbs_temp};
+      humans_complete_temp.push_back(human_temp);
+    }else{
+      humans_faceless_temp.push_back(limbs_temp);
+    }
+  }
+  humans_faceless = humans_faceless_temp;
+  humans_complete = humans_complete_temp; 
+}
+
+/*
 void FeatureExtractor::callback(const feature_recon::Persons::ConstPtr& msg){
   body_limb current_limb;
   if(msg->persons.size()){                                                    // If the message contains any persons then
@@ -126,6 +167,7 @@ void FeatureExtractor::callback(const feature_recon::Persons::ConstPtr& msg){
     }
   }
 }
+*/
 
 double FeatureExtractor::calDistance(feature_recon::BodyPartElm first, feature_recon::BodyPartElm second){
   return sqrt(pow((second.x-first.x), 2) + pow((second.y-first.y), 2) + pow((second.z-first.z),2));
@@ -172,6 +214,7 @@ body_limb FeatureExtractor::isBodyPair(feature_recon::BodyPartElm first, feature
   return new_limb;
 }
 
+/*
 void FeatureExtractor::printHuman(){
   for (int i = 0; i < 21; i++) {
     if(human[i].id != -1){
@@ -184,6 +227,8 @@ void FeatureExtractor::printHuman(){
   ROS_INFO("--");
 
 }
+
+*/
 
 void FeatureExtractor::saveLimbToFile(body_limb limb){
   if(limb.avg_info.length && limb.avg_info.joint_confidence){
@@ -210,6 +255,9 @@ ros::Rate loop_rate(10);
 
 
 while (ros::ok()){
+
+  ROS_INFO("Number of humans without faces: %d", (int)FeatExt.getFacelessHumans().size());
+  ROS_INFO("Number of humans WHIT faces: %d", (int)FeatExt.getCompleteHumans().size());
 
   ros::spinOnce();
   loop_rate.sleep();
