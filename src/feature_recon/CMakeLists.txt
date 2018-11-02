@@ -4,6 +4,7 @@ project(feature_recon)
 ## Add support for C++11, supported in ROS Kinetic and newer
 add_definitions(-std=c++11)
 
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy

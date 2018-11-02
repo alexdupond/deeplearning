@@ -26,6 +26,7 @@ struct part_to_limb{
 struct human_data{
   vector<double> encoding;
   vector<body_limb> limbs;
+  int id;
 };
 
 #endif
