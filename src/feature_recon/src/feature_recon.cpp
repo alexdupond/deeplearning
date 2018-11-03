@@ -1,16 +1,16 @@
+#include "data_handler.h"
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "human_structs.h"
 #include "feature_extractor/feature_extractor.h"
-#include <sstream>
 #include <string>
-#include <fstream>
-#include <iostream>
 
+const int MAX_HUMANS = 100;
 
 using namespace std;
 
-void load_human_data(string path);
+bool load_human_data(string path);
+bool save_human_data(human_data human, string path);
 
 int main(int argc, char **argv)
 {
@@ -21,63 +21,38 @@ ros::NodeHandle nh;
 FeatureExtractor FeatExt(nh);
 
 ros::Rate loop_rate(10);
-string path = "/home/alexdupond/deeplearning/src/feature_recon/src/human_data/human_1.txt";
-load_human_data(path);
+
+// The path for the folder where to load and save human data
+string path = "/home/alexdupond/deeplearning/src/feature_recon/src/human_data/human_";
+
+// Loading the humans already found.
+for (int i = 0; i < MAX_HUMANS; i++) {
+  string full_path = path;
+  full_path.append(to_string(i+1));
+  ROS_INFO("Trying the following path: %s", full_path.c_str());
+  if(!load_human_data(full_path)){
+    ROS_INFO("No more human data files to process");
+    break;
+  }
+}
+
+bool face = true;
 
 while (ros::ok()){
+  if(FeatExt.getCompleteHumans().size() && face){
+    human_data human_1 = FeatExt.getCompleteHumans()[0];
+    human_1.id = 1;
+    if(save_human_data(human_1, path)){
+      ROS_INFO("Human %d - Saved", human_1.id);
+    }else{
+      ROS_INFO("Human %d - Could not save", human_1.id);
+    }
+    face = false;
+  }
 
-
-  /*
-  if((int)FeatExt.getFacelessHumans().size())
-  ROS_INFO("Number of humans without faces: %d", (int)FeatExt.getFacelessHumans().size());
-
-  if((int)FeatExt.getCompleteHumans().size())
-    ROS_INFO("Number of humans WHIT faces: %d", (int)FeatExt.getCompleteHumans().size());
-*/
   ros::spinOnce();
   loop_rate.sleep();
 }
 
 return 0;
-}
-
-void load_human_data(string path){
-  ifstream infile(path);
-  human_data human;
-
-  int human_id;
-  double encoding_val;
-  if(infile.is_open()){
-    if(infile >> human_id){
-      ROS_INFO("ID is %d", human_id);
-      human.id = human_id;
-    }
-
-    for (int i = 0; i < 4; i++) {
-      if(infile >> encoding_val){
-        ROS_INFO("Enconding value %f added", encoding_val);
-        human.encoding.push_back(encoding_val);
-      }
-    }
-    ROS_INFO("A total of %d, encodings were loaded", human.encoding.size());
-
-    int no_body_parts;
-    if(infile >> no_body_parts){
-      ROS_INFO("Total of %d body parts for human with ID: %d", no_body_parts, human_id);
-    }
-    body_limb_info body_info;
-    int limb_id;
-    string limb_name;
-    for (int i = 0; i < no_body_parts; i++) {
-
-      if(infile >> body_info.length >> body_info.joint_confidence){
-        ROS_INFO("Body info %d with len: %f and conf: %f", i,  body_info.length, body_info.joint_confidence);
-      //  human.limbs.push_back(body_info);
-      }
-    }
-    ROS_INFO("Total number of %d limb info added", human.limbs.size());
-
-  }else{
-    ROS_INFO("Could not load file");
-  }
 }
