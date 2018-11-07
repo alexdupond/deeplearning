@@ -62,6 +62,7 @@ bool save_human_data(human_data human, string path){
   }
 
   ofstream human_data;
+  path.append("human_");
   path.append(to_string(human.id));
   path.append(TXT_EXTENSION);
   human_data.open(path, ios::trunc);
@@ -80,6 +81,7 @@ bool load_human_data(string path){
   ifstream human_file;
   human_data human;
   path.append(TXT_EXTENSION);
+  ROS_INFO("Trying the following path: %s", path.c_str());
 
   human_file.open(path);
 

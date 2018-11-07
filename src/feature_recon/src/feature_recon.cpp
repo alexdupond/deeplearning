@@ -23,13 +23,13 @@ FeatureExtractor FeatExt(nh);
 ros::Rate loop_rate(10);
 
 // The path for the folder where to load and save human data
-string path = "/home/alexdupond/deeplearning/src/feature_recon/src/human_data/human_";
+string path = "/home/alexdupond/deeplearning/src/feature_recon/src/human_data/";
 
 // Loading the humans already found.
 for (int i = 0; i < MAX_HUMANS; i++) {
   string full_path = path;
+  full_path.append("human_");
   full_path.append(to_string(i+1));
-  ROS_INFO("Trying the following path: %s", full_path.c_str());
   if(!load_human_data(full_path)){
     ROS_INFO("No more human data files to process");
     break;
