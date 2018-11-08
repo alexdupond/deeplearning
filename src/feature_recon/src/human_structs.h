@@ -2,6 +2,7 @@
 #define HUMAN_STRUCTS
 
 #include <string>
+#include <vector> 
 
 using namespace std;
 
