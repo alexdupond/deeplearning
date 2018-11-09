@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "feature_extractor/feature_extractor.h"
-#include "Person.h"
+#include "Persons.h"
 #include <string>
 
 using namespace std;

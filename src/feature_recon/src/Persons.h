@@ -14,23 +14,23 @@ const string PATH = "/home/alexdupond/deeplearning/src/feature_recon/src/human_d
 const int MAX_PERSONS = 100;
 using namespace std;
 
-class Person
+class Persons
 {
 private:
     // PLACEHOLDERS:
     vector<human_data> Persons;
-    vector<double> faceEncoding;
-    vector<int> limbs;
+
+    float face_comp_thresh = 0.6;
+
+    void initializeKnownPersons(string knownPersonsPath);
 
 public:
-    Person();
-    //Person(vector<double> &faceEncoding, vector<int> &limbs);
+    Persons();
 
     vector<double> getFaceEncoding();
     vector<int> getLibs();
     bool faceVerification(human_data &person);
 
-    bool updatePerson(human_data &person);
     bool saveToFile(human_data &person, string path);
     bool loadPersons(string path);
 

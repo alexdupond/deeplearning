@@ -1,6 +1,6 @@
-#include "Person.h"
+#include "Persons.h"
 
-Person::Person()
+Persons::Persons()
 {
   if(loadPersons(PATH))
     ROS_INFO( "%d number of persons loaded", (int)Persons.size());
@@ -8,33 +8,19 @@ Person::Person()
 }
 
 
-vector<double> Person::getFaceEncoding()
+bool Persons::faceVerification(human_data &person1, human_data& person2)
 {
-    return faceEncoding;
-}
-
-vector<int> Person::getLibs()
-{
-    return limbs;
-}
-
-
-bool Person::faceVerification(human_data &person){
-  int sum;
-  for (int i = 0; i < Persons.size(); i++) {
-    for (int j = 0; j < 128; j++) {
-
-    }
+  int sum = 0;
+  for (int i = 0; i < person1.encoding.size(); i++)
+  {
+    sum += (person1[i] - person2[i])*(person1[i] - person2[i]);
   }
-  return false;
+  sum = sqrt(sum);
+  return (sum <= face_comp_thresh);
 }
 
-bool Person::updatePerson(human_data &person){
 
-  return false;
-}
-
-bool Person::saveToFile(human_data &person, string path){
+bool Persons::saveToFile(human_data &person, string path){
   string line;
 
   // Writing human id to file
@@ -102,7 +88,7 @@ bool Person::saveToFile(human_data &person, string path){
 
 
 
-bool Person::loadPersons(string path){
+bool Persons::loadPersons(string path){
   for (int i = 0; i < MAX_PERSONS; i++) {
     string full_path = path;
     full_path.append("human_");
@@ -179,7 +165,8 @@ bool Person::loadPersons(string path){
         ROS_INFO("Human(%d) - Added body limb: %s", human.id, human.limbs[human.limbs.size()-1].name.c_str());
 
         // Breaks if no more limbs to add
-        if(!human_file){
+        if(!human_file)
+        {
           ROS_INFO("Human(%d) - Total of %d limb(s) were added", human.id, (int)human.limbs.size());
           ROS_INFO("Human(%d) - Human done loadning", human.id);
           break;
@@ -189,4 +176,11 @@ bool Person::loadPersons(string path){
     human_file.close();
   }
   return false;
+}
+
+void Persons::initializeKnownPersons(string knownPersonsPath)
+{
+  std::string command = "python ";
+  command += knownPersonsPath;
+  system(command.c_str());
 }

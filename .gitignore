@@ -8,3 +8,9 @@ install/
 src/\.idea/misc\.xml
 
 src/\.idea/
+
+\.idea/codeStyles/Project\.xml
+
+\.idea/
+
+src/cmake-build-debug/CMakeFiles/clion-log\.txt

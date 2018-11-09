@@ -41,6 +41,6 @@ include_directories(
 install()
 
 
-add_executable(feature_recon_node src/feature_recon.cpp src/feature_extractor/feature_extractor.cpp src/Person.cpp)
+add_executable(feature_recon_node src/feature_recon.cpp src/feature_extractor/feature_extractor.cpp src/Persons.cpp)
 target_link_libraries(feature_recon_node ${catkin_LIBRARIES})
 add_dependencies(feature_recon_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
