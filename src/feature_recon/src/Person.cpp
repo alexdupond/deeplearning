@@ -19,18 +19,57 @@ vector<int> Person::getLibs()
 }
 
 
-bool Person::faceVerification(human_data &person){
+bool Person::faceVerification(human_data &person1, human_data &person2){
   int sum;
-  for (int i = 0; i < Persons.size(); i++) {
-    for (int j = 0; j < 128; j++) {
 
-    }
-  }
   return false;
 }
 
-bool Person::updatePerson(human_data &person){
+void Person::updateLimb(body_limb &new_limb, body_limb &old_limb){
+  // Check if there are less then 5 elements in the list
+  if(old_limb.info_list.size() < MAX_SMM){
+    old_limb.info_list.push_back(new_limb);
 
+  // Else check if the new limb conf is bigger then the smallest conf
+  }else if(old_limb.avg_info.joint_confidence < new_limb.avg_info.joint_confidence){
+    // Find the smallest confidence and replace with new info.
+    double min_body_info = 1.0;
+    for (int i = 0; i < old_limb.info_list.size(); i++) {
+      if(old_limb.info_list[i].joint_confidence == old_limb.avg_info.joint_confidence){
+        old_limb.info_list[i] = new_limb.avg_info;
+      }
+
+      if(min_body_info > old_limb.info_list[i].joint_confidence){
+        min_body_info = old_limb.info_list[i].joint_confidence;
+      }
+    }
+  }
+  int sum;
+  for (int i = 0; i < old_limb.info_list.size(); i++) {
+    sum += old_limb.info_list[i].length;
+  }
+  old_limb.avg_info.length = sum/old_limb.info_list.size();
+}
+
+bool Person::updatePerson(human_data &person){
+  for (int i = 0; i < Persons.size(); i++) {
+    if(faceVerification(Persons[i], person)){
+      for (int j = 0; j < person.limbs.size(); j++) {
+        bool limb_exist = false;
+        for (int k = 0; k < Persons[i].limbs.size(); k++) {
+          if(person.limbs[j].id == Persons[i].limbs[k].id){
+            updateLimb(person.limbs[j], Persons[i].limbs[k]);
+            limb_exist = true;
+          }
+        }
+        if(!limb_exsit)
+          Persons[i].limbs.push_back(person.limbs[j]);
+      }
+    }
+  }
+  person.id = Person.size()+1;
+  Persons.push_back(person);
+  ROS_INFO("New person with ID: %d was added", person.id);
   return false;
 }
 

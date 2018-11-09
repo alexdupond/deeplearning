@@ -25,6 +25,7 @@ void FeatureExtractor::callback(const feature_recon::Persons::ConstPtr& msg){
         current_limb = isBodyPair(msg->persons[k].body_part[i], msg->persons[k].body_part[i+j]);
         if((current_limb.id != -1) && current_limb.avg_info.length && current_limb.avg_info.joint_confidence){         // If the current limb is a body pair, then ...
           limbs_temp.push_back(current_limb);
+          limbs_temp.info_list.push_back(current_limb);
         }
       }
     }
