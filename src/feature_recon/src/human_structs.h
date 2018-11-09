@@ -24,10 +24,12 @@ struct part_to_limb{
   string name;
 };
 
-struct human_data{
+struct human_data
+{
   vector<double> encoding;
   vector<body_limb> limbs;
   int id;
+  string name = "Unknown name";
 };
 
 #endif

@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "feature_extractor/feature_extractor.h"
-#include "Person.h"
+#include "Persons.h"
 #include <string>
 
 using namespace std;
@@ -16,14 +16,22 @@ ros::init(argc, argv, "deature_recon");
 
 ros::NodeHandle nh;
 FeatureExtractor FeatExt(nh);
-Person persons;
-ros::Rate loop_rate(10);
+Persons persons;
+ros::Rate loop_rate(100);
 
 // The path for the folder where to load and save human data
 
-
+ros::Time last_stamp;
 
 while (ros::ok()){
+  if(last_stamp != FeatExt.getCurrentStamp()){
+    last_stamp = FeatExt.getCurrentStamp();
+    for (int i = 0; i < FeatExt.getCompleteHumans().size(); i++) {
+      if(persons.updatePerson(FeatExt.getCompleteHumans()[i])){
+          ROS_INFO("Person updated");
+      }
+    }
+  }
 
   ros::spinOnce();
   loop_rate.sleep();

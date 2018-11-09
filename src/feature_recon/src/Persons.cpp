@@ -1,79 +1,116 @@
-#include "Person.h"
+#include "Persons.h"
 
-Person::Person()
+Persons::Persons()
 {
-  if(loadPersons(PATH))
-    ROS_INFO( "%d number of persons loaded", (int)Persons.size());
-  ROS_INFO("No persons was loaded");
+  if(loadPersons(PATH)){
+    ROS_INFO( "%d number of persons loaded", (int)PersonsList.size());
+  }else{
+    ROS_INFO("No persons was loaded");
+  }
 }
 
 
-vector<double> Person::getFaceEncoding()
-{
-    return faceEncoding;
+bool Persons::faceVerification(human_data &person1, human_data &person2){
+  int sum = 0;
+  for (int i = 0; i < person1.encoding.size(); i++)
+  {
+    sum += (person1.encoding[i] - person2.encoding[i])*(person1.encoding[i] - person2.encoding[i]);
+  }
+  sum = sqrt(sum);
+  return (sum <= face_comp_thresh);
 }
 
-vector<int> Person::getLibs()
-{
-    return limbs;
-}
+bool Persons::updateLimb(body_limb &new_limb, body_limb &old_limb){
+  double min_confidence = 1.0;
 
-
-bool Person::faceVerification(human_data &person1, human_data &person2){
-  int sum;
-
-  return false;
-}
-
-void Person::updateLimb(body_limb &new_limb, body_limb &old_limb){
   // Check if there are less then 5 elements in the list
   if(old_limb.info_list.size() < MAX_SMM){
-    old_limb.info_list.push_back(new_limb);
-
+    // Add new value to list
+    old_limb.info_list.push_back(new_limb.avg_info);
+    // Find the smallest value of joint confidence
+    for (int i = 0; i < old_limb.info_list.size(); i++) {
+      if(min_confidence > old_limb.info_list[i].joint_confidence){
+        min_confidence = old_limb.info_list[i].joint_confidence;
+      }
+    }
   // Else check if the new limb conf is bigger then the smallest conf
   }else if(old_limb.avg_info.joint_confidence < new_limb.avg_info.joint_confidence){
     // Find the smallest confidence and replace with new info.
-    double min_body_info = 1.0;
     for (int i = 0; i < old_limb.info_list.size(); i++) {
       if(old_limb.info_list[i].joint_confidence == old_limb.avg_info.joint_confidence){
         old_limb.info_list[i] = new_limb.avg_info;
+        //ROS_INFO("Lowest confidence is: %f and will be replaced by: %f", old_limb.avg_info.joint_confidence, new_limb.avg_info.joint_confidence);
       }
-
-      if(min_body_info > old_limb.info_list[i].joint_confidence){
-        min_body_info = old_limb.info_list[i].joint_confidence;
+      if(min_confidence > old_limb.info_list[i].joint_confidence){
+        min_confidence = old_limb.info_list[i].joint_confidence;
       }
     }
+  }else{
+    return false;
   }
-  int sum;
+  double sum = 0;
   for (int i = 0; i < old_limb.info_list.size(); i++) {
     sum += old_limb.info_list[i].length;
   }
   old_limb.avg_info.length = sum/old_limb.info_list.size();
+  old_limb.avg_info.joint_confidence = min_confidence;
+
+  return true;
 }
 
-bool Person::updatePerson(human_data &person){
-  for (int i = 0; i < Persons.size(); i++) {
-    if(faceVerification(Persons[i], person)){
+bool Persons::updatePerson(human_data &person){
+  bool limb_updated = false;
+  for (int i = 0; i < PersonsList.size(); i++) {
+    if(faceVerification(PersonsList[i], person)){
+      ROS_INFO("---");
+      ROS_INFO("---");
+      ROS_INFO("---");
+      ROS_INFO("Person with ID: %d was a match to unknown", PersonsList[i].id);
       for (int j = 0; j < person.limbs.size(); j++) {
         bool limb_exist = false;
-        for (int k = 0; k < Persons[i].limbs.size(); k++) {
-          if(person.limbs[j].id == Persons[i].limbs[k].id){
-            updateLimb(person.limbs[j], Persons[i].limbs[k]);
+        for (int k = 0; k < PersonsList[i].limbs.size(); k++) {
+          if(person.limbs[j].id == PersonsList[i].limbs[k].id){
             limb_exist = true;
+            if(updateLimb(person.limbs[j], PersonsList[i].limbs[k])){
+              ROS_INFO("Limb ID: %d was updated!", PersonsList[i].limbs[k].id);
+              limb_updated = true;
+            }
           }
         }
-        if(!limb_exsit)
-          Persons[i].limbs.push_back(person.limbs[j]);
+        if(!limb_exist){
+          PersonsList[i].limbs.push_back(person.limbs[j]);
+          ROS_INFO("New limb added");
+        }
       }
+
+      if(limb_updated){
+        if(saveToFile(PersonsList[i], PATH)){
+          ROS_INFO("Person with ID: %d got updatede", PersonsList[i].id);
+        }else{
+          ROS_INFO("Could not update person with ID: %d!", PersonsList[i].id);
+        }
+        return true;
+      }
+      return false;
     }
   }
-  person.id = Person.size()+1;
-  Persons.push_back(person);
-  ROS_INFO("New person with ID: %d was added", person.id);
+  person.id = PersonsList.size()+1;
+  PersonsList.push_back(person);
+  cout << "Person is = " << PersonsList.size() << " + 1 = " << person.id << endl;
+  if(saveToFile(person, PATH)){
+    ROS_INFO("Person with ID: %d got saved", person.id);
+  }else{
+    ROS_INFO("Could not save person with ID: %d!", person.id);
+  }
+
   return false;
 }
 
-bool Person::saveToFile(human_data &person, string path){
+vector<human_data> Persons::getPersons(){
+  return PersonsList;
+}
+
+bool Persons::saveToFile(human_data &person, string path){
   string line;
 
   // Writing human id to file
@@ -141,7 +178,7 @@ bool Person::saveToFile(human_data &person, string path){
 
 
 
-bool Person::loadPersons(string path){
+bool Persons::loadPersons(string path){
   for (int i = 0; i < MAX_PERSONS; i++) {
     string full_path = path;
     full_path.append("human_");
@@ -149,10 +186,10 @@ bool Person::loadPersons(string path){
 
     ifstream human_file;
     human_data human;
-    path.append(TXT_EXTENSION);
-    ROS_INFO("Trying the following path: %s", path.c_str());
+    full_path.append(TXT_EXTENSION);
+    ROS_INFO("Trying the following path: %s", full_path.c_str());
 
-    human_file.open(path);
+    human_file.open(full_path);
 
     if(!human_file.is_open()){
       return true;
@@ -218,14 +255,22 @@ bool Person::loadPersons(string path){
         ROS_INFO("Human(%d) - Added body limb: %s", human.id, human.limbs[human.limbs.size()-1].name.c_str());
 
         // Breaks if no more limbs to add
-        if(!human_file){
+        if(!human_file)
+        {
           ROS_INFO("Human(%d) - Total of %d limb(s) were added", human.id, (int)human.limbs.size());
           ROS_INFO("Human(%d) - Human done loadning", human.id);
           break;
         }
       }
-    Persons.push_back(human);
+    PersonsList.push_back(human);
     human_file.close();
   }
   return false;
+}
+
+void Persons::initializeKnownPersons(string knownPersonsPath)
+{
+  std::string command = "python ";
+  command += knownPersonsPath;
+  system(command.c_str());
 }

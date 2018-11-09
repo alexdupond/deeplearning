@@ -12,11 +12,17 @@ vector<human_data> FeatureExtractor::getCompleteHumans(){
   return humans_complete;
 }
 
+ros::Time FeatureExtractor::getCurrentStamp(){
+  return current_stamp;
+}
+
 
 void FeatureExtractor::callback(const feature_recon::Persons::ConstPtr& msg){
   vector<vector<body_limb>> humans_faceless_temp;
   vector<human_data> humans_complete_temp;
 
+  current_stamp = msg->header.stamp;
+  
   body_limb current_limb;
   for (int k = 0; k < msg->persons.size(); k++){                            // Go through all persons
     vector<body_limb> limbs_temp;
@@ -25,13 +31,16 @@ void FeatureExtractor::callback(const feature_recon::Persons::ConstPtr& msg){
         current_limb = isBodyPair(msg->persons[k].body_part[i], msg->persons[k].body_part[i+j]);
         if((current_limb.id != -1) && current_limb.avg_info.length && current_limb.avg_info.joint_confidence){         // If the current limb is a body pair, then ...
           limbs_temp.push_back(current_limb);
-          limbs_temp.info_list.push_back(current_limb);
+          limbs_temp[limbs_temp.size()-1].info_list.push_back(current_limb.avg_info);
         }
       }
     }
 
     if(msg->persons[k].encoding.size()){
-      human_data human_temp = {msg->persons[k].encoding, limbs_temp};
+      human_data human_temp;
+      human_temp.encoding = msg->persons[k].encoding;
+      human_temp.limbs = limbs_temp;
+      human_temp.id = -1;
       humans_complete_temp.push_back(human_temp);
     }else{
       humans_faceless_temp.push_back(limbs_temp);

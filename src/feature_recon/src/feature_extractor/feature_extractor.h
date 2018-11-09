@@ -3,6 +3,7 @@
 
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+#include "std_msgs/Header.h"
 #include "feature_recon/Persons.h"
 #include "feature_recon/Person.h"
 #include "feature_recon/BodyPartElm.h"
@@ -30,9 +31,11 @@ public:
   void saveLimbToFile(body_limb limb);
   vector<vector<body_limb>> getFacelessHumans();
   vector<human_data> getCompleteHumans();
+  ros::Time getCurrentStamp(); 
 
 
 private:
+  ros::Time current_stamp;
   ros::NodeHandle nh;
   ros::Subscriber extract_features_sub;
   vector<vector<body_limb>> humans_faceless;
