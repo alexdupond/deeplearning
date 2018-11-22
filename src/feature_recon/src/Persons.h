@@ -34,5 +34,6 @@ public:
     bool updateLimb(body_limb &limb1, body_limb &limb2);
     bool saveToFile(human_data &person, string path);
     bool loadPersons(string path);
+    double distanceBetween(human_data human1, vector<body_limb> human_unknown);
 
 };

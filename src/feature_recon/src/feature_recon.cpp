@@ -31,6 +31,13 @@ while (ros::ok()){
           ROS_INFO("Person updated");
       }
     }
+
+    for (int j = 0; j < FeatExt.getFacelessHumans().size(); j++) {
+      for (int i = 0; i < persons.getPersons().size(); i++) {
+        ROS_INFO("Distance between %d and unknown is: %f", persons.getPersons()[i].id, persons.distanceBetween(persons.getPersons()[i], FeatExt.getFacelessHumans()[j]));
+      }
+    }
+
   }
 
   ros::spinOnce();

@@ -9,6 +9,16 @@ Persons::Persons()
   }
 }
 
+double Persons::distanceBetween(human_data human_known, vector<body_limb> human_unknown){
+  double sum = 0;
+  for (int i = 0; i < human_unknown.size(); i++) {
+    for (int j = 0; j < human_known.limbs.size(); j++) {
+      sum += pow(human_unknown[i].avg_info.length - human_known.limbs[i].avg_info.length,2);
+    }
+  }
+  return sqrt(sum);
+}
+
 
 bool Persons::faceVerification(human_data &person1, human_data &person2){
   int sum = 0;
