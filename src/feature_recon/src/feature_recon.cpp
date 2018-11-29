@@ -8,7 +8,7 @@ using namespace std;
 
 bool load_human_data(string path);
 bool save_human_data(human_data human, string path);
-double comfidenceFunction(vector<body_limb> &h1, vector<body_limb> &h2);
+double comfidenceFunction(human_data &h1, human_data &h2);
 
 int main(int argc, char **argv)
 {
@@ -49,12 +49,12 @@ return 0;
 }
 
 
-double comfidenceFunction(vector<body_limb> &h1, vector<body_limb> &h2)
+double comfidenceFunction(human_data &h1, human_data &h2)
 {
     int minLimbs = 6;
 
-    int h1Size = h1.size();
-    int h2Size = h2.size();
+    int h1Size = h1.limbs.size();
+    int h2Size = h2.limbs.size();
 
     double length = 0.0;
     double confidence = 0.0;
@@ -67,10 +67,10 @@ double comfidenceFunction(vector<body_limb> &h1, vector<body_limb> &h2)
         {
             for (size_t j = 0; j < h2Size; j++)
             {
-                if(h1[i].id == h2[j].id)
+                if(h1.limbs[i].id == h2.limbs[j].id)
                 {
-                    length += abs(h1[i].avg_info.length - h2[j].avg_info.length);
-                    confidence += (h1[i].avg_info.joint_confidence + h2[j].avg_info.joint_confidence);
+                    length += abs(h1.limbs[i].avg_info.length - h2.limbs[j].avg_info.length);
+                    confidence += (h1.limbs[i].avg_info.joint_confidence + h2.limbs[j].avg_info.joint_confidence);
                     comparedLimbs++;
                 }
             }
@@ -84,10 +84,10 @@ double comfidenceFunction(vector<body_limb> &h1, vector<body_limb> &h2)
         {
             for (size_t j = 0; j < h1Size; j++)
             {
-                if(h1[i].id == h2[j].id)
+                if(h1.limbs[i].id == h2.limbs[j].id)
                 {
-                    length += (h2[i].avg_info.length / h1[j].avg_info.length);
-                    confidence += (h2[i].avg_info.joint_confidence + h1[j].avg_info.joint_confidence);
+                    length += (h2.limbs[i].avg_info.length / h1.limbs[j].avg_info.length);
+                    confidence += (h2.limbs[i].avg_info.joint_confidence + h1.limbs[j].avg_info.joint_confidence);
                     comparedLimbs++;
                 }
             }
