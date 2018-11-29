@@ -26,6 +26,12 @@ private:
 
     void initializeKnownPersons(string knownPersonsPath);
 
+
+    void bubbleSort(vector<human_data> &array);
+    void bubbleSort(vector<human_data> &array, int left, int right);
+    inline void swap(vector<human_data> &array, int i, int j);
+    void shrinkVector(vector<human_data> &array);
+
 public:
     Persons();
     double faceVerification(human_data &person1, human_data &person2);

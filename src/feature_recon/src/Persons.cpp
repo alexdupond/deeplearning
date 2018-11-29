@@ -70,6 +70,11 @@ bool Persons::updateLimb(body_limb &new_limb, body_limb &old_limb){
 }
 
 bool Persons::updatePerson(human_data &person){
+  if (tempPersons.size() >= MAX_SMM)
+  {
+    bubbleSort(tempPersons);
+    shrinkVector(tempPersons);
+  }
   double faceScore = 2.0;
   int minID = 0;
   bool isKnownPerson = false;
@@ -127,8 +132,6 @@ bool Persons::updatePerson(human_data &person){
       }else{
       //  ROS_INFO("Could not update person with ID: %d!", PersonsList[minID].id);
       }
-      sort(tempPersons);
-      limit(tempPersons);
       return true;
     }
     return false;
@@ -339,4 +342,43 @@ void Persons::initializeKnownPersons(string knownPersonsPath)
   std::string command = "python ";
   command += knownPersonsPath;
   system(command.c_str());
+}
+
+void Persons::bubbleSort(vector<human_data> &array)
+{
+    bubbleSort(array, 0, array.size()-1);
+}
+
+void Persons::bubbleSort(vector<human_data> &array, int left, int right)
+{
+    bool swapped = false;
+    for (int i = left; i <= right; ++i)
+    {
+        for (int j = left; j <= right - i - 1 + left; ++j)
+        {
+            if (array[j].t < array[j + 1].t)
+            {
+                swap(array, j, j + 1);
+                swapped = true;
+            }
+        }
+        if(!swapped)
+            return;
+    }
+}
+
+inline void Persons::swap(vector<human_data> &array, int i, int j)
+{
+    Point indexI = array[i];
+    array[i] = array[j];
+    array[j] = indexI;
+}
+
+
+void Persons::shrinkVector(vector<human_data> &array)
+{
+    while (array.size() > MAX_SMM)
+    {
+      array.pop_back();
+    }
 }
