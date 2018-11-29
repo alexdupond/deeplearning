@@ -2,7 +2,7 @@
 #define HUMAN_STRUCTS
 
 #include <string>
-#include <vector> 
+#include <vector>
 
 using namespace std;
 
@@ -30,6 +30,7 @@ struct human_data
   vector<body_limb> limbs;
   int id;
   string name = "Unknown name";
+  ros::Time t = 0; 
 };
 
 #endif

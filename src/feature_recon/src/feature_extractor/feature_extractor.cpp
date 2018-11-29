@@ -22,7 +22,7 @@ void FeatureExtractor::callback(const feature_recon::Persons::ConstPtr& msg){
   vector<human_data> humans_complete_temp;
 
   current_stamp = msg->header.stamp;
-  
+
   body_limb current_limb;
   for (int k = 0; k < msg->persons.size(); k++){                            // Go through all persons
     vector<body_limb> limbs_temp;
@@ -36,11 +36,12 @@ void FeatureExtractor::callback(const feature_recon::Persons::ConstPtr& msg){
       }
     }
 
-    if(msg->persons[k].encoding.size()){
+    if(msg->persons[k].encoding.size() == 128){
       human_data human_temp;
       human_temp.encoding = msg->persons[k].encoding;
       human_temp.limbs = limbs_temp;
       human_temp.id = -1;
+      human_temp.t = current_stamp;
       humans_complete_temp.push_back(human_temp);
     }else{
       humans_faceless_temp.push_back(limbs_temp);

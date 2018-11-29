@@ -20,14 +20,15 @@ double Persons::distanceBetween(human_data human_known, vector<body_limb> human_
 }
 
 
-bool Persons::faceVerification(human_data &person1, human_data &person2){
-  int sum = 0;
+double Persons::faceVerification(human_data &person1, human_data &person2){
+  double sum = 0;
   for (int i = 0; i < person1.encoding.size(); i++)
   {
     sum += (person1.encoding[i] - person2.encoding[i])*(person1.encoding[i] - person2.encoding[i]);
   }
   sum = sqrt(sum);
-  return (sum <= face_comp_thresh);
+  ROS_INFO("Distance between face[%d] and face[%d] = %f", person1.id, person2.id, sum);
+  return sum;
 }
 
 bool Persons::updateLimb(body_limb &new_limb, body_limb &old_limb){
@@ -69,50 +70,105 @@ bool Persons::updateLimb(body_limb &new_limb, body_limb &old_limb){
 }
 
 bool Persons::updatePerson(human_data &person){
-  bool limb_updated = false;
-  for (int i = 0; i < PersonsList.size(); i++) {
-    if(faceVerification(PersonsList[i], person)){
-      ROS_INFO("---");
-      ROS_INFO("---");
-      ROS_INFO("---");
-      ROS_INFO("Person with ID: %d was a match to unknown", PersonsList[i].id);
-      for (int j = 0; j < person.limbs.size(); j++) {
-        bool limb_exist = false;
-        for (int k = 0; k < PersonsList[i].limbs.size(); k++) {
-          if(person.limbs[j].id == PersonsList[i].limbs[k].id){
-            limb_exist = true;
-            if(updateLimb(person.limbs[j], PersonsList[i].limbs[k])){
-              ROS_INFO("Limb ID: %d was updated!", PersonsList[i].limbs[k].id);
-              limb_updated = true;
-            }
-          }
-        }
-        if(!limb_exist){
-          PersonsList[i].limbs.push_back(person.limbs[j]);
-          ROS_INFO("New limb added");
-        }
-      }
-
-      if(limb_updated){
-        if(saveToFile(PersonsList[i], PATH)){
-          ROS_INFO("Person with ID: %d got updatede", PersonsList[i].id);
-        }else{
-          ROS_INFO("Could not update person with ID: %d!", PersonsList[i].id);
-        }
-        return true;
-      }
-      return false;
+  double faceScore = 2.0;
+  int minID = 0;
+  bool isKnownPerson = false;
+  // Temp person list update
+  for (int i = 0; i < tempPersons.size(); i++) {
+    double tempScore = faceVerification(tempPersons[i], person);
+    if(tempScore < faceScore){
+      faceScore = tempScore;
+      minID = i;
     }
   }
-  person.id = PersonsList.size()+1;
-  PersonsList.push_back(person);
-  cout << "Person is = " << PersonsList.size() << " + 1 = " << person.id << endl;
-  if(saveToFile(person, PATH)){
-    ROS_INFO("Person with ID: %d got saved", person.id);
-  }else{
-    ROS_INFO("Could not save person with ID: %d!", person.id);
+
+  for (int i = 0; i < PersonsList.size(); i++) {
+    double tempScore = faceVerification(PersonsList[i], person);
+    if(tempScore < faceScore){
+      faceScore = tempScore;
+      minID = i;
+      isKnownPerson = true;
+    }
   }
 
+  if((faceScore < face_comp_thresh && !isKnownPerson)){
+
+    ROS_INFO("---");
+    ROS_INFO("---");
+    ROS_INFO("---");
+    ROS_INFO("Temp person with ID: %d was a match to unknown", tempPersons[minID].id);
+    bool checkIfSave = false;
+    for (int j = 0; j < person.limbs.size(); j++) {
+      bool limb_exist = false;
+      for (int k = 0; k < tempPersons[minID].limbs.size(); k++) {
+        if(person.limbs[j].id == tempPersons[minID].limbs[k].id){
+          limb_exist = true;
+          if(updateLimb(person.limbs[j], tempPersons[minID].limbs[k])){
+            tempPersons[minID].t = person.t;
+            if(tempPersons[minID].limbs[k].id == 18 && tempPersons[minID].limbs[k].info_list.size() == MAX_SMM){
+              checkIfSave = true;
+            }
+          //  ROS_INFO("Temp - Limb ID: %d was updated!", tempPersons[minID].limbs[k].id);
+          }
+        }
+      }
+      if(!limb_exist){
+        tempPersons[minID].limbs.push_back(person.limbs[j]);
+      //  ROS_INFO("New temp limb added");
+      }
+    }
+    if(checkIfSave){
+      human_data tempP = tempPersons[minID];
+      tempP.id = PersonsList.size()+1;
+      PersonsList.push_back(tempP);
+      tempPersons.erase(tempPersons.begin()+minID);
+      if(saveToFile(tempP, PATH)){
+        ROS_INFO("Temp person with ID: %d got saved in human list!", tempPersons[minID].id);
+      }else{
+      //  ROS_INFO("Could not update person with ID: %d!", PersonsList[minID].id);
+      }
+      sort(tempPersons);
+      limit(tempPersons);
+      return true;
+    }
+    return false;
+  }
+
+
+  if(faceScore < face_comp_thresh && isKnownPerson){
+//    ROS_INFO("---");
+//    ROS_INFO("---");
+    ROS_INFO("---");
+    ROS_INFO("Person with ID: %d was a match to unknown", PersonsList[minID].id);
+    bool limb_updated = false;
+    for (int j = 0; j < person.limbs.size(); j++) {
+      bool limb_exist = false;
+      for (int k = 0; k < PersonsList[minID].limbs.size(); k++) {
+        if(person.limbs[j].id == PersonsList[minID].limbs[k].id){
+          limb_exist = true;
+          if(updateLimb(person.limbs[j], PersonsList[minID].limbs[k])){
+          //  ROS_INFO("Limb ID: %d was updated!", PersonsList[minID].limbs[k].id);
+            limb_updated = true;
+          }
+        }
+      }
+      if(!limb_exist){
+        PersonsList[minID].limbs.push_back(person.limbs[j]);
+      }
+    }
+
+    if(limb_updated){
+      if(saveToFile(PersonsList[minID], PATH)){
+        ROS_INFO("Person with ID: %d got updatede and resaved", PersonsList[minID].id);
+      }else{
+      //  ROS_INFO("Could not update person with ID: %d!", PersonsList[minID].id);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  tempPersons.push(person);
   return false;
 }
 
@@ -151,7 +207,7 @@ bool Persons::saveToFile(human_data &person, string path){
 
     //Writing info list to files
     line.append("Info_list:");
-    for (int j = 0; j < 5; j++) {
+    for (int j = 0; j < MAX_SMM; j++) {
       if(j < person.limbs[i].info_list.size()){
         line.append(";");
         line.append(to_string(person.limbs[i].info_list[j].length));
@@ -215,7 +271,7 @@ bool Persons::loadPersons(string path){
       // Getting the encodings of the human
       getline(human_file, line, ':');
       ROS_INFO("Human(%d) - Loadning encodings", human.id);
-      for (int i = 0; i < 5; i++) {
+      for (int i = 0; i < 128; i++) {
         getline(human_file, line, ',');
         human.encoding.push_back(stod(line));
       }
@@ -240,7 +296,7 @@ bool Persons::loadPersons(string path){
         // Getting list of limb info
         body_limb_info limb_info;
         getline(human_file, line, ':');
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < MAX_SMM; i++) {
           getline(human_file, line, ';');
           getline(human_file, line, ',');
           limb_info.length = stod(line);

@@ -20,14 +20,15 @@ class Persons
 private:
     // PLACEHOLDERS:
     vector<human_data> PersonsList;
+    vector<human_data> tempPersons;
 
-    float face_comp_thresh = 0.6;
+    double face_comp_thresh = 0.5;
 
     void initializeKnownPersons(string knownPersonsPath);
 
 public:
     Persons();
-    bool faceVerification(human_data &person1, human_data &person2);
+    double faceVerification(human_data &person1, human_data &person2);
     vector<human_data> getPersons();
 
     bool updatePerson(human_data &person);
@@ -35,5 +36,6 @@ public:
     bool saveToFile(human_data &person, string path);
     bool loadPersons(string path);
     double distanceBetween(human_data human1, vector<body_limb> human_unknown);
+
 
 };
