@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include "ros/ros.h"
 
 using namespace std;
 
@@ -30,7 +31,7 @@ struct human_data
   vector<body_limb> limbs;
   int id;
   string name = "Unknown name";
-  ros::Time t = 0; 
+  ros::Time t;
 };
 
 #endif
