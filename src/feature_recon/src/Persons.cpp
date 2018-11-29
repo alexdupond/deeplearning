@@ -70,11 +70,11 @@ bool Persons::updateLimb(body_limb &new_limb, body_limb &old_limb){
 }
 
 bool Persons::updatePerson(human_data &person){
-  if (tempPersons.size() >= MAX_SMM)
-  {
-    bubbleSort(tempPersons);
-    shrinkVector(tempPersons);
-  }
+
+  ros::Time currentTime = person.t;
+  if (tempPersons.size() > 1){bubbleSort(tempPersons);}
+  shrinkVector(tempPersons, currentTime);
+
   double faceScore = 2.0;
   int minID = 0;
   bool isKnownPerson = false;
@@ -375,10 +375,18 @@ inline void Persons::swap(vector<human_data> &array, int i, int j)
 }
 
 
-void Persons::shrinkVector(vector<human_data> &array)
+void Persons::shrinkVector(vector<human_data> &array, ros::Time &currentTime)
 {
     while (array.size() > MAX_SMM)
     {
-      array.pop_back();
+        array.pop_back();
+    }
+
+    int i = array.size() -1;
+
+    while ((array[i].t - currentTime) > _timeThresh)
+    {
+        array.pop_back();
+        i = array.size() -1;
     }
 }
