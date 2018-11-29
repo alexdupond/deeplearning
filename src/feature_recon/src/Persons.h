@@ -24,6 +24,7 @@ private:
     vector<human_data> tempPersons;
 
     double face_comp_thresh = 0.5;
+    ros::Duration _timeThresh = 30;
 
     void initializeKnownPersons(string knownPersonsPath);
 
@@ -31,7 +32,7 @@ private:
     void bubbleSort(vector<human_data> &array);
     void bubbleSort(vector<human_data> &array, int left, int right);
     inline void swap(vector<human_data> &array, int i, int j);
-    void shrinkVector(vector<human_data> &array);
+    void shrinkVector(vector<human_data> &array, ros::Time &currentTime);
 
 public:
     Persons();
