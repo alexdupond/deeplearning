@@ -24,7 +24,7 @@ private:
     vector<human_data> tempPersons;
 
     double face_comp_thresh = 0.5;
-    ros::Duration _timeThresh = ros::Duration(30);
+    ros::Duration _timeThresh = ros::Duration(2);
 
     void initializeKnownPersons(string knownPersonsPath);
 

@@ -70,7 +70,7 @@ bool Persons::updateLimb(body_limb &new_limb, body_limb &old_limb){
 }
 
 bool Persons::updatePerson(human_data &person){
-
+  ROS_INFO("Temp human size = %d", (int)tempPersons.size());
   ros::Time currentTime = person.t;
   if (tempPersons.size() > 1){bubbleSort(tempPersons);}
   shrinkVector(tempPersons, currentTime);
@@ -384,8 +384,9 @@ void Persons::shrinkVector(vector<human_data> &array, ros::Time &currentTime)
 
     int i = array.size() -1;
 
-    while ((array[i].t - currentTime) > _timeThresh)
+    while (array.size() && (currentTime - array[i].t) > _timeThresh)
     {
+        cout << "Temp human timed out and got popped!" << endl;
         array.pop_back();
         i = array.size() -1;
     }

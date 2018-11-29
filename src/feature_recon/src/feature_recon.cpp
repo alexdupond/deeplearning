@@ -8,7 +8,7 @@ using namespace std;
 
 bool load_human_data(string path);
 bool save_human_data(human_data human, string path);
-double comfidenceFunction(human_data &h1, human_data &h2);
+double comfidenceFunction(human_data &h1, vector<body_limb> &h2);
 
 int main(int argc, char **argv)
 {
@@ -35,7 +35,10 @@ while (ros::ok()){
 
     for (int j = 0; j < FeatExt.getFacelessHumans().size(); j++) {
       for (int i = 0; i < persons.getPersons().size(); i++) {
-        ROS_INFO("Distance between %d and unknown is: %f", persons.getPersons()[i].id, persons.distanceBetween(persons.getPersons()[i], FeatExt.getFacelessHumans()[j]));
+        double conf = comfidenceFunction(persons.getPersons()[i], FeatExt.getFacelessHumans()[j]);
+        if(conf != -1){
+            ROS_INFO("Human with ID[%d] has a confidence to unknown person of %f", persons.getPersons()[i].id, conf);
+          }
       }
     }
 
@@ -49,12 +52,12 @@ return 0;
 }
 
 
-double comfidenceFunction(human_data &h1, human_data &h2)
+double comfidenceFunction(human_data &h1, vector<body_limb> &h2)
 {
     int minLimbs = 6;
 
     int h1Size = h1.limbs.size();
-    int h2Size = h2.limbs.size();
+    int h2Size = h2.size();
 
     double length = 0.0;
     double confidence = 0.0;
@@ -67,10 +70,10 @@ double comfidenceFunction(human_data &h1, human_data &h2)
         {
             for (size_t j = 0; j < h2Size; j++)
             {
-                if(h1.limbs[i].id == h2.limbs[j].id)
+                if(h1.limbs[i].id == h2[j].id)
                 {
-                    length += abs(h1.limbs[i].avg_info.length - h2.limbs[j].avg_info.length);
-                    confidence += (h1.limbs[i].avg_info.joint_confidence + h2.limbs[j].avg_info.joint_confidence);
+                    length += abs(h1.limbs[i].avg_info.length - h2[j].avg_info.length);
+                    confidence += (h1.limbs[i].avg_info.joint_confidence + h2[j].avg_info.joint_confidence);
                     comparedLimbs++;
                 }
             }
@@ -84,10 +87,10 @@ double comfidenceFunction(human_data &h1, human_data &h2)
         {
             for (size_t j = 0; j < h1Size; j++)
             {
-                if(h1.limbs[i].id == h2.limbs[j].id)
+                if(h1.limbs[i].id == h2[j].id)
                 {
-                    length += (h2.limbs[i].avg_info.length / h1.limbs[j].avg_info.length);
-                    confidence += (h2.limbs[i].avg_info.joint_confidence + h1.limbs[j].avg_info.joint_confidence);
+                    length += (h2[i].avg_info.length / h1.limbs[j].avg_info.length);
+                    confidence += (h2[i].avg_info.joint_confidence + h1.limbs[j].avg_info.joint_confidence);
                     comparedLimbs++;
                 }
             }
