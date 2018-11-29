@@ -369,7 +369,7 @@ void Persons::bubbleSort(vector<human_data> &array, int left, int right)
 
 inline void Persons::swap(vector<human_data> &array, int i, int j)
 {
-    Point indexI = array[i];
+    human_data indexI = array[i];
     array[i] = array[j];
     array[j] = indexI;
 }
