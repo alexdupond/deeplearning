@@ -98,9 +98,9 @@ bool Persons::updatePerson(human_data &person){
 
   if((faceScore < face_comp_thresh && !isKnownPerson)){
 
-    ROS_INFO("---");
-    ROS_INFO("---");
-    ROS_INFO("---");
+//    ROS_INFO("---");
+  //  ROS_INFO("---");
+  //  ROS_INFO("---");
     ROS_INFO("Temp person with ID: %d was a match to unknown", tempPersons[minID].id);
     bool checkIfSave = false;
     for (int j = 0; j < person.limbs.size(); j++) {
@@ -141,7 +141,7 @@ bool Persons::updatePerson(human_data &person){
   if(faceScore < face_comp_thresh && isKnownPerson){
 //    ROS_INFO("---");
 //    ROS_INFO("---");
-    ROS_INFO("---");
+//    ROS_INFO("---");
     ROS_INFO("Person with ID: %d was a match to unknown", PersonsList[minID].id);
     bool limb_updated = false;
     for (int j = 0; j < person.limbs.size(); j++) {
@@ -196,7 +196,7 @@ bool Persons::saveToFile(human_data &person, string path){
   line.append("\n");
 
   // Saving all the limbs
-  ROS_INFO("Human %d - Saving %d limbs", person.id, (int)person.limbs.size());
+//  ROS_INFO("Human %d - Saving %d limbs", person.id, (int)person.limbs.size());
   for (int i = 0; i < person.limbs.size(); i++) {
     // Writing limb id to file
     line.append("Limb_id:");
