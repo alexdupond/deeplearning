@@ -23,8 +23,8 @@ private:
     vector<human_data> PersonsList;
     vector<human_data> tempPersons;
 
-    double face_comp_thresh = 0.5;
-    ros::Duration _timeThresh = ros::Duration(2);
+    double face_comp_thresh = 0.4;
+    ros::Duration _timeThresh = ros::Duration(1);
 
     void initializeKnownPersons(string knownPersonsPath);
 

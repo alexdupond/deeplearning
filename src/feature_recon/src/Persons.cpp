@@ -21,10 +21,12 @@ double Persons::distanceBetween(human_data human_known, vector<body_limb> human_
 
 
 double Persons::faceVerification(human_data &person1, human_data &person2){
-  double sum = 0;
+  double sum = 0
+  if(person1.encoding.size() != person2.encoding.size())
+    ROS_INFO("Encoding size error! - %d x %d ", person1.encoding.size(), person2.encoding.size());
   for (int i = 0; i < person1.encoding.size(); i++)
   {
-    sum += (person1.encoding[i] - person2.encoding[i])*(person1.encoding[i] - person2.encoding[i]);
+    sum += pow(person1.encoding[i] - person2.encoding[i]),2);
   }
   sum = sqrt(sum);
   ROS_INFO("Distance between face[%d] and face[%d] = %f", person1.id, person2.id, sum);
