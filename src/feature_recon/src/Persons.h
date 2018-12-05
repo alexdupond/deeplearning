@@ -10,7 +10,7 @@
 
 
 const string TXT_EXTENSION = ".txt";
-const string PATH = "/home/quist/deeplearning/src/feature_recon/src/human_data/";
+const string PATH = "/home/alexdupond/deeplearning/src/feature_recon/src/human_data/";
 
 const int MAX_PERSONS = 100;
 const int MAX_SMM = 5;
@@ -23,8 +23,8 @@ private:
     vector<human_data> PersonsList;
     vector<human_data> tempPersons;
 
-    double face_comp_thresh = 0.4;
-    ros::Duration _timeThresh = ros::Duration(1);
+    double face_comp_thresh = 0.6;
+    ros::Duration _timeThresh = ros::Duration(4);
 
     void initializeKnownPersons(string knownPersonsPath);
 

@@ -1,4 +1,6 @@
 #include "Persons.h"
+#include <iomanip>
+#include <sstream>
 
 Persons::Persons()
 {
@@ -23,13 +25,12 @@ double Persons::distanceBetween(human_data human_known, vector<body_limb> human_
 double Persons::faceVerification(human_data &person1, human_data &person2){
   double sum = 0;
   if(person1.encoding.size() != person2.encoding.size())
-    ROS_INFO("Encoding size error! - %d x %d ", person1.encoding.size(), person2.encoding.size());
+    ROS_INFO("Encoding size error! - %d x %d ", (int)person1.encoding.size(), (int)person2.encoding.size());
   for (int i = 0; i < person1.encoding.size(); i++)
   {
     sum += pow((person1.encoding[i] - person2.encoding[i]),2);
   }
   sum = sqrt(sum);
-  ROS_INFO("Distance between face[%d] and face[%d] = %f", person1.id, person2.id, sum);
   return sum;
 }
 
@@ -72,7 +73,7 @@ bool Persons::updateLimb(body_limb &new_limb, body_limb &old_limb){
 }
 
 bool Persons::updatePerson(human_data &person){
-  ROS_INFO("Temp human size = %d", (int)tempPersons.size());
+  //ROS_INFO("Temp human size = %d", (int)tempPersons.size());
   ros::Time currentTime = person.t;
   if (tempPersons.size() > 1){bubbleSort(tempPersons);}
   shrinkVector(tempPersons, currentTime);
@@ -100,7 +101,6 @@ bool Persons::updatePerson(human_data &person){
   }
 
   if((faceScore < face_comp_thresh && !isKnownPerson)){
-    ROS_INFO("Temp person with ID: %d was a match to unknown", tempPersons[minID].id);
     bool checkIfSave = false;
     for (int j = 0; j < person.limbs.size(); j++) {
       bool limb_exist = false;
@@ -109,7 +109,7 @@ bool Persons::updatePerson(human_data &person){
           limb_exist = true;
           if(updateLimb(person.limbs[j], tempPersons[minID].limbs[k])){
             tempPersons[minID].t = person.t;
-            if(tempPersons[minID].limbs[k].id == 18 && tempPersons[minID].limbs[k].info_list.size() == MAX_SMM){
+            if(tempPersons[minID].limbs[k].info_list.size() == MAX_SMM){
               checkIfSave = true;
             }
           //  ROS_INFO("Temp - Limb ID: %d was updated!", tempPersons[minID].limbs[k].id);
@@ -124,10 +124,11 @@ bool Persons::updatePerson(human_data &person){
     if(checkIfSave){
       human_data tempP = tempPersons[minID];
       tempP.id = PersonsList.size()+1;
+      tempP.name = "Unknown";
       PersonsList.push_back(tempP);
       tempPersons.erase(tempPersons.begin()+minID);
       if(saveToFile(tempP, PATH)){
-        ROS_INFO("Temp person with ID: %d got saved in human list!", tempPersons[minID].id);
+        ROS_INFO("New human with ID: %d got saved!", PersonsList[PersonsList.size()-1].id);
       }else{
       //  ROS_INFO("Could not update person with ID: %d!", PersonsList[minID].id);
       }
@@ -138,14 +139,18 @@ bool Persons::updatePerson(human_data &person){
 
 
   if(faceScore < face_comp_thresh && isKnownPerson){
+    ROS_INFO("%s is in the image with a distance of: %f", PersonsList[minID].name.c_str(), faceScore );
+
 //    ROS_INFO("---");
 //    ROS_INFO("---");
 //    ROS_INFO("---");
-    ROS_INFO("Person with ID: %d was a match to unknown", PersonsList[minID].id);
+//    ROS_INFO("Person with ID: %d was a match to unknown", PersonsList[minID].id);
     bool limb_updated = false;
     for (int j = 0; j < person.limbs.size(); j++) {
       bool limb_exist = false;
+      double sumOfConf = 0.0;
       for (int k = 0; k < PersonsList[minID].limbs.size(); k++) {
+        sumOfConf += PersonsList[minID].limbs[k].avg_info.joint_confidence;
         if(person.limbs[j].id == PersonsList[minID].limbs[k].id){
           limb_exist = true;
           if(updateLimb(person.limbs[j], PersonsList[minID].limbs[k])){
@@ -154,14 +159,18 @@ bool Persons::updatePerson(human_data &person){
           }
         }
       }
+      sumOfConf = sumOfConf/14;
+      if(sumOfConf > PersonsList[minID].confidence)
+        PersonsList[minID].confidence = sumOfConf;
+
       if(!limb_exist){
         PersonsList[minID].limbs.push_back(person.limbs[j]);
       }
     }
-
+    ROS_INFO("%s has a total body confidence of %f procent", PersonsList[minID].name.c_str(), PersonsList[minID].confidence);
     if(limb_updated){
       if(saveToFile(PersonsList[minID], PATH)){
-        ROS_INFO("Person with ID: %d got updatede and resaved", PersonsList[minID].id);
+    //    ROS_INFO("Person with ID: %d got updatede and resaved", PersonsList[minID].id);
       }else{
       //  ROS_INFO("Could not update person with ID: %d!", PersonsList[minID].id);
       }
@@ -171,6 +180,7 @@ bool Persons::updatePerson(human_data &person){
   }
 
   tempPersons.push_back(person);
+
   return false;
 }
 
@@ -186,10 +196,18 @@ bool Persons::saveToFile(human_data &person, string path){
   line.append(to_string(person.id));
   line.append("\n");
 
+  // Human name
+  line.append("Human_name:");
+  line.append(person.name);
+  line.append("\n");
+
   // Writing encoding to file
   line.append("Encoding:");
   for (int i = 0; i < 128; i++) {
-    line.append(to_string(person.encoding[i]));
+    //line.append(to_string(person.encoding[i]));
+    stringstream stream;
+    stream << fixed << setprecision(20) << person.encoding[i];
+    line.append(stream.str());
     line.append(",");
   }
   line.append("\n");
@@ -264,11 +282,18 @@ bool Persons::loadPersons(string path){
     }
 
       string line;
-      // Getting the name of the human
+      // Getting the id of the human
       getline(human_file, line, ':');
       human_file >> human.id;
       ROS_INFO("Human(%d) - Loadning human", human.id);
       human_file.get();
+
+      // Getting the name of the human
+      getline(human_file, line, ':');
+      human_file >> human.name;
+      ROS_INFO("Human(%d) - Loadning human name: %s", human.id, human.name.c_str());
+      human_file.get();
+
 
       // Getting the encodings of the human
       getline(human_file, line, ':');
@@ -385,7 +410,6 @@ void Persons::shrinkVector(vector<human_data> &array, ros::Time &currentTime)
 
     while (array.size() && (currentTime - array[i].t) > _timeThresh)
     {
-        cout << "Temp human timed out and got popped!" << endl;
         array.pop_back();
         i = array.size() -1;
     }

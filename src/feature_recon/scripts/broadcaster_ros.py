@@ -20,9 +20,9 @@ from tf_pose.estimator import TfPoseEstimator
 from tf_pose.networks import model_wh, get_graph_path
 
 import face_recognition
-import glob
 import numpy as np
-import cv2
+from matplotlib import pyplot
+
 
 def read_depth(width, height, data) :
     # read function
@@ -41,6 +41,12 @@ def median(x, y, cloud) :
     #print("Minimum: ", items[0], ", Maximum: ", items[len(items)-1])
     return items[len(items)//2]
 
+def cropIMG(top, right, bottom, left, image):
+    unknown_face_image = image[top:bottom, left:right]
+    #pyplot.imshow(unknown_face_image, interpolation='nearest')
+    #pyplot.show()
+    return unknown_face_image
+
 def get_3d_distance(body_part_1, body_part_2):
     return math.sqrt(math.pow(body_part_2[0] - body_part_1[0], 2) + math.pow(body_part_2[1] - body_part_1[1], 2) + math.pow(body_part_2[2] - body_part_1[2], 2))
 
@@ -53,6 +59,7 @@ def humans_to_msg(humans, cloud, cv_image):
     for human in humans:
         person = Person()
 
+
         for k in human.body_parts:
             body_part = human.body_parts[k]
             body_part_msg = BodyPartElm()
@@ -64,27 +71,45 @@ def humans_to_msg(humans, cloud, cv_image):
             body_part_msg.confidence = body_part.score
 
             if not(math.isnan(body_part_msg.x) and math.isnan(body_part_msg.y) and math.isnan(body_part_msg.z)) :
-                #print(body_part_msg.x, ", ", body_part_msg.y, ", ", body_part_msg.z);
                 person.body_part.append(body_part_msg)
 
         face_box = human.get_face_box(width, height)
         if face_box is not None:
             top, right, bottom, left = face_box['y'] - (face_box['h'] // 2), face_box['x'] + (face_box['w'] // 2), \
                                        face_box['y'] + (face_box['h'] // 2), face_box['x'] - (face_box['w'] // 2)
-            croppedImg = cropIMG(top, right, bottom, left, cv_image)
-            faceBox = face_recognition.face_locations(croppedImg, 1, "cnn")
-            face = face_recognition.face_encodings(croppedImg, faceBox, 1)
-            #face = face_recognition.face_encodings(cv_image, [(top, right, bottom, left)])
+            face_height = (bottom-top)*0.5
+            face_width = (right-left)*0.5
+            top -= face_height
+            right += face_width
+            bottom += face_height
+            left -=face_width
+
+            if left < 0:
+                left = 0
+                right = int(face_width)
+            elif right > width:
+                right = width
+                left = width - int(face_width)
+
+            if top < 0:
+                top = 0
+                bottom = int(face_height)
+            elif bottom > height:
+                bottom = height
+                top = height - int(face_height)
+
+            croppedImg = cropIMG(int(top), int(right), int(bottom), int(left), cv_image)
+            faceBox = face_recognition.face_locations(croppedImg, model="cnn")
+            face = face_recognition.face_encodings(croppedImg, faceBox, num_jitters=1)
+        #    face = face_recognition.face_encodings(cv_image, [(top, right, bottom, left)])
             if len(face) > 0:
                 person.encoding = face[0]
-
 
         persons.persons.append(person)
     return persons
 
 
 def callback_image(data, cloud):
-    # et = time.time()
     try:
         cv_image = cv_bridge.imgmsg_to_cv2(data, "bgr8")
     except CvBridgeError as e:
@@ -101,8 +126,8 @@ def callback_image(data, cloud):
     finally:
         tf_lock.release()
 
-    image = pose_estimator.draw_humans(cv_image, humans)
-    image_msg = cv_bridge.cv2_to_imgmsg(image, encoding='bgr8')
+#    image = pose_estimator.draw_humans(cv_image, humans)
+    image_msg = cv_bridge.cv2_to_imgmsg(cv_image, encoding='bgr8')
     pub_img.publish(image_msg)
     msg = humans_to_msg(humans, cloud, cv_image)
     msg.image_w = data.width
@@ -155,9 +180,3 @@ if __name__ == '__main__':
     rospy.loginfo('start+')
     rospy.spin()
     rospy.loginfo('finished')
-
-def cropIMG(top, right, bottom, left, image):
-    unknown_face_image = image[top:bottom, left:right]
-    #unknown_pil = Image.fromarray(unknown_face_image)      # Show the cutout of face
-    #unknown_pil.show()
-    return unknown_face_image

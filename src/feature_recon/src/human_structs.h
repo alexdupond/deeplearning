@@ -30,7 +30,8 @@ struct human_data
   vector<double> encoding;
   vector<body_limb> limbs;
   int id;
-  string name = "Unknown name";
+  string name = "Unknown";
+  double confidence = 0.0; 
   ros::Time t;
 };
 
