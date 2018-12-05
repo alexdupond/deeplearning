@@ -41,6 +41,7 @@ while (ros::ok()){
           }
       }
     }
+    
   }
 
   ros::spinOnce();

@@ -22,6 +22,7 @@ from tf_pose.networks import model_wh, get_graph_path
 import face_recognition
 import glob
 import numpy as np
+import cv2
 
 def read_depth(width, height, data) :
     # read function
@@ -46,6 +47,9 @@ def get_3d_distance(body_part_1, body_part_2):
 def humans_to_msg(humans, cloud, cv_image):
     persons = Persons()
 
+    height = np.size(cv_image, 0)
+    width = np.size(cv_image, 1)
+
     for human in humans:
         person = Person()
 
@@ -53,17 +57,17 @@ def humans_to_msg(humans, cloud, cv_image):
             body_part = human.body_parts[k]
             body_part_msg = BodyPartElm()
             body_part_msg.part_id = body_part.part_idx
-            depth_list = read_depth(int(body_part.x*640), int(body_part.y*480), cloud);
+            depth_list = read_depth(int(body_part.x*width), int(body_part.y*height), cloud);
             body_part_msg.x = depth_list[0]
             body_part_msg.y = depth_list[1]
-            body_part_msg.z = median(int(body_part.x*640), int(body_part.y*480), cloud)
+            body_part_msg.z = median(int(body_part.x*width), int(body_part.y*height), cloud)
             body_part_msg.confidence = body_part.score
 
             if not(math.isnan(body_part_msg.x) and math.isnan(body_part_msg.y) and math.isnan(body_part_msg.z)) :
                 #print(body_part_msg.x, ", ", body_part_msg.y, ", ", body_part_msg.z);
                 person.body_part.append(body_part_msg)
 
-        face_box = human.get_face_box(640, 480)
+        face_box = human.get_face_box(width, height)
         if face_box is not None:
             top, right, bottom, left = face_box['y'] - (face_box['h'] // 2), face_box['x'] + (face_box['w'] // 2), \
                                        face_box['y'] + (face_box['h'] // 2), face_box['x'] - (face_box['w'] // 2)

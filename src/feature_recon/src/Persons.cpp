@@ -21,12 +21,12 @@ double Persons::distanceBetween(human_data human_known, vector<body_limb> human_
 
 
 double Persons::faceVerification(human_data &person1, human_data &person2){
-  double sum = 0
+  double sum = 0;
   if(person1.encoding.size() != person2.encoding.size())
     ROS_INFO("Encoding size error! - %d x %d ", person1.encoding.size(), person2.encoding.size());
   for (int i = 0; i < person1.encoding.size(); i++)
   {
-    sum += pow(person1.encoding[i] - person2.encoding[i]),2);
+    sum += pow((person1.encoding[i] - person2.encoding[i]),2);
   }
   sum = sqrt(sum);
   ROS_INFO("Distance between face[%d] and face[%d] = %f", person1.id, person2.id, sum);
@@ -81,6 +81,7 @@ bool Persons::updatePerson(human_data &person){
   int minID = 0;
   bool isKnownPerson = false;
   // Temp person list update
+
   for (int i = 0; i < tempPersons.size(); i++) {
     double tempScore = faceVerification(tempPersons[i], person);
     if(tempScore < faceScore){
@@ -99,10 +100,6 @@ bool Persons::updatePerson(human_data &person){
   }
 
   if((faceScore < face_comp_thresh && !isKnownPerson)){
-
-//    ROS_INFO("---");
-  //  ROS_INFO("---");
-  //  ROS_INFO("---");
     ROS_INFO("Temp person with ID: %d was a match to unknown", tempPersons[minID].id);
     bool checkIfSave = false;
     for (int j = 0; j < person.limbs.size(); j++) {
