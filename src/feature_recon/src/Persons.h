@@ -10,7 +10,7 @@
 
 
 const string TXT_EXTENSION = ".txt";
-const string PATH = "/home/alexdupond/deeplearning/src/feature_recon/src/human_data/";
+const string PATH = "/home/quist/deeplearning/src/feature_recon/src/human_data/";
 
 const int MAX_PERSONS = 100;
 const int MAX_SMM = 5;

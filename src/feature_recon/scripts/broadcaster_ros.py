@@ -71,7 +71,10 @@ def humans_to_msg(humans, cloud, cv_image):
         if face_box is not None:
             top, right, bottom, left = face_box['y'] - (face_box['h'] // 2), face_box['x'] + (face_box['w'] // 2), \
                                        face_box['y'] + (face_box['h'] // 2), face_box['x'] - (face_box['w'] // 2)
-            face = face_recognition.face_encodings(cv_image, [(top, right, bottom, left)])
+            croppedImg = cropIMG(top, right, bottom, left, cv_image)
+            faceBox = face_recognition.face_locations(croppedImg, 1, "cnn")
+            face = face_recognition.face_encodings(croppedImg, faceBox, 1)
+            #face = face_recognition.face_encodings(cv_image, [(top, right, bottom, left)])
             if len(face) > 0:
                 person.encoding = face[0]
 
@@ -152,3 +155,9 @@ if __name__ == '__main__':
     rospy.loginfo('start+')
     rospy.spin()
     rospy.loginfo('finished')
+
+def cropIMG(top, right, bottom, left, image):
+    unknown_face_image = image[top:bottom, left:right]
+    #unknown_pil = Image.fromarray(unknown_face_image)      # Show the cutout of face
+    #unknown_pil.show()
+    return unknown_face_image
